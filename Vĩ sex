@@ -1,203 +1,168 @@
---// ===== VĨ FLY RED STYLE =====
+--// ===== VĨ FLY ITACHI STYLE (FIX DRAG MOBILE) =====
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
 -------------------------------------------------
--- Splash chữ pixel (không nền)
+-- Splash
 -------------------------------------------------
 local splash = Instance.new("ScreenGui", game.CoreGui)
-
-local txt = Instance.new("TextLabel", splash)
-txt.Size = UDim2.new(1,0,1,0)
-txt.BackgroundTransparency = 1
-txt.Text = "vĩ địt trâu"
-txt.Font = Enum.Font.Arcade
-txt.TextScaled = true
-txt.TextStrokeTransparency = 0
-txt.TextColor3 = Color3.new(1,1,1)
-
-task.wait(1.2)
+local t = Instance.new("TextLabel", splash)
+t.Size = UDim2.new(1,0,1,0)
+t.BackgroundTransparency = 1
+t.Text = "vĩ địt trâu"
+t.Font = Enum.Font.Arcade
+t.TextScaled = true
+t.TextStrokeTransparency = 0
+task.wait(1)
 splash:Destroy()
 
 -------------------------------------------------
--- GUI chính
+-- GUI
 -------------------------------------------------
 local gui = Instance.new("ScreenGui", game.CoreGui)
 
-local function makeBtn(parent, text, pos, size, color)
-	local b = Instance.new("TextButton", parent)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.fromOffset(300,120)
+frame.Position = UDim2.new(0.1,0,0.6,0)
+frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+frame.BorderSizePixel = 0
+
+-------------------------------------------------
+-- 🔥 DRAG MOBILE (TỰ CODE)
+-------------------------------------------------
+local dragging = false
+local dragInput, startPos, startFramePos
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		startPos = input.Position
+		startFramePos = frame.Position
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - startPos
+		frame.Position = UDim2.new(
+			startFramePos.X.Scale,
+			startFramePos.X.Offset + delta.X,
+			startFramePos.Y.Scale,
+			startFramePos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+-------------------------------------------------
+-- Tạo nút vuông
+-------------------------------------------------
+local function btn(text,x,y,w,h,color)
+	local b = Instance.new("TextButton", frame)
 	b.Text = text
-	b.Size = size
-	b.Position = pos
+	b.Size = UDim2.fromOffset(w,h)
+	b.Position = UDim2.fromOffset(x,y)
 	b.BackgroundColor3 = color
 	b.TextColor3 = Color3.new(1,1,1)
 	b.TextScaled = true
-	b.Font = Enum.Font.GothamBold
 	b.BorderSizePixel = 0
+	b.Font = Enum.Font.GothamBold
 	return b
 end
 
--------------------------------------------------
--- Frame đỏ/đen
--------------------------------------------------
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.fromOffset(260,130)
-frame.Position = UDim2.new(0.1,0,0.6,0)
-frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-frame.Active = true
-frame.Draggable = true
+local RED = Color3.fromRGB(200,0,0)
+local BLACK = Color3.fromRGB(15,15,15)
 
 -------------------------------------------------
--- Thanh tiêu đề
+-- Layout giống ảnh
 -------------------------------------------------
-local title = makeBtn(
-	frame,
-	"VĨ FLY",
-	UDim2.new(0,0,0,0),
-	UDim2.new(1,0,0,35),
-	Color3.fromRGB(200,0,0)
-)
-title.AutoButtonColor = false
+btn("VĨ FLY",0,0,300,30,RED).AutoButtonColor=false
+
+local close = btn("X",0,30,60,30,RED)
+local hide  = btn("-",60,30,60,30,RED)
+local flyBtn= btn("FLY",120,30,180,30,RED)
+
+local minus = btn("-",0,60,75,30,BLACK)
+local plus  = btn("+",75,60,75,30,BLACK)
+local up    = btn("↑",150,60,75,30,BLACK)
+local down  = btn("↓",225,60,75,30,BLACK)
 
 -------------------------------------------------
--- Nút đóng (X)
+-- Thu nhỏ
 -------------------------------------------------
-local close = makeBtn(frame,"X",
-	UDim2.new(0,0,0,35),
-	UDim2.new(0.25,0,0,30),
-	Color3.fromRGB(200,0,0)
-)
+local minimized=false
+hide.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	frame.Size = minimized and UDim2.fromOffset(300,30) or UDim2.fromOffset(300,120)
+end)
 
+-------------------------------------------------
+-- Đóng
+-------------------------------------------------
 close.MouseButton1Click:Connect(function()
 	gui:Destroy()
 end)
 
 -------------------------------------------------
--- Thu nhỏ (-)
--------------------------------------------------
-local hide = makeBtn(frame,"-",
-	UDim2.new(0.25,0,0,35),
-	UDim2.new(0.25,0,0,30),
-	Color3.fromRGB(200,0,0)
-)
-
-local minimized = false
-hide.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	for _,v in pairs(frame:GetChildren()) do
-		if v ~= title and v ~= hide then
-			v.Visible = not minimized
-		end
-	end
-	frame.Size = minimized and UDim2.fromOffset(260,35) or UDim2.fromOffset(260,130)
-end)
-
--------------------------------------------------
 -- Fly system
 -------------------------------------------------
-local flying = false
-local speed = 50
-local yDir = 0
+local flying=false
+local speed=50
+local yDir=0
 local bv
 
 local function startFly()
-	local char = player.Character or player.CharacterAdded:Wait()
-	local hum = char:WaitForChild("Humanoid")
-	local hrp = char:WaitForChild("HumanoidRootPart")
+	local char=player.Character or player.CharacterAdded:Wait()
+	local hum=char:WaitForChild("Humanoid")
+	local hrp=char:WaitForChild("HumanoidRootPart")
 
-	flying = true
+	flying=true
 	hum:ChangeState(Enum.HumanoidStateType.Physics)
 
-	bv = Instance.new("BodyVelocity", hrp)
-	bv.MaxForce = Vector3.new(1e9,1e9,1e9)
+	bv=Instance.new("BodyVelocity",hrp)
+	bv.MaxForce=Vector3.new(1e9,1e9,1e9)
 
-	RunService:BindToRenderStep("FlyMove",0,function()
+	RunService:BindToRenderStep("Fly",0,function()
 		if not flying then return end
-
-		local moveDir = hum.MoveDirection
-
-		bv.Velocity = Vector3.new(
-			moveDir.X * speed,
-			yDir * speed,
-			moveDir.Z * speed
-		)
+		local dir=hum.MoveDirection
+		bv.Velocity=Vector3.new(dir.X*speed,yDir*speed,dir.Z*speed)
 	end)
 end
 
 local function stopFly()
-	flying = false
-	RunService:UnbindFromRenderStep("FlyMove")
+	flying=false
+	RunService:UnbindFromRenderStep("Fly")
 	if bv then bv:Destroy() end
 end
-
--------------------------------------------------
--- Các nút chức năng (giống layout ảnh)
--------------------------------------------------
-
--- Fly ON/OFF
-local flyBtn = makeBtn(frame,"FLY",
-	UDim2.new(0.5,0,0.35,0),
-	UDim2.new(0.5,0,0,30),
-	Color3.fromRGB(200,0,0)
-)
 
 flyBtn.MouseButton1Click:Connect(function()
 	if flying then
 		stopFly()
-		flyBtn.Text = "FLY"
+		flyBtn.Text="FLY"
 	else
 		startFly()
-		flyBtn.Text = "STOP"
+		flyBtn.Text="STOP"
 	end
 end)
 
--- +
-local plus = makeBtn(frame,"+",
-	UDim2.new(0.25,0,0.7,0),
-	UDim2.new(0.25,0,0,30),
-	Color3.fromRGB(200,0,0)
-)
+plus.MouseButton1Click:Connect(function() speed+=10 end)
+minus.MouseButton1Click:Connect(function() speed=math.max(10,speed-10) end)
 
-plus.MouseButton1Click:Connect(function()
-	speed += 10
-end)
+up.MouseButton1Down:Connect(function() yDir=1 end)
+up.MouseButton1Up:Connect(function() yDir=0 end)
 
--- -
-local minus = makeBtn(frame,"-",
-	UDim2.new(0,0,0.7,0),
-	UDim2.new(0.25,0,0,30),
-	Color3.fromRGB(200,0,0)
-)
-
-minus.MouseButton1Click:Connect(function()
-	speed = math.max(10, speed - 10)
-end)
-
--- UP
-local up = makeBtn(frame,"↑",
-	UDim2.new(0.5,0,0.7,0),
-	UDim2.new(0.25,0,0,30),
-	Color3.fromRGB(200,0,0)
-)
-
-up.MouseButton1Down:Connect(function()
-	yDir = 1
-end)
-up.MouseButton1Up:Connect(function()
-	yDir = 0
-end)
-
--- DOWN
-local down = makeBtn(frame,"↓",
-	UDim2.new(0.75,0,0.7,0),
-	UDim2.new(0.25,0,0,30),
-	Color3.fromRGB(200,0,0)
-)
-
-down.MouseButton1Down:Connect(function()
-	yDir = -1
-end)
-down.MouseButton1Up:Connect(function()
-	yDir = 0
-end)
+down.MouseButton1Down:Connect(function() yDir=-1 end)
+down.MouseButton1Up:Connect(function() yDir=0 end)
