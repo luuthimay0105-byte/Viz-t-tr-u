@@ -1,11 +1,10 @@
---// ===== VĨ FLY MOBILE PRO =====
+--// ===== VĨ FLY MOBILE FINAL =====
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
 
 -------------------------------------------------
--- Splash (pixel + không nền)
+-- Splash pixel (không nền)
 -------------------------------------------------
 local splash = Instance.new("ScreenGui", game.CoreGui)
 
@@ -15,8 +14,8 @@ txt.BackgroundTransparency = 1
 txt.Text = "vĩ địt trâu"
 txt.Font = Enum.Font.Arcade
 txt.TextScaled = true
-txt.TextColor3 = Color3.new(1,1,1)
 txt.TextStrokeTransparency = 0
+txt.TextColor3 = Color3.new(1,1,1)
 
 task.wait(1.2)
 splash:Destroy()
@@ -27,18 +26,18 @@ splash:Destroy()
 local gui = Instance.new("ScreenGui", game.CoreGui)
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.fromOffset(230,170)
-frame.Position = UDim2.new(0.5,-115,0.6,-85)
+frame.Size = UDim2.fromOffset(230,200)
+frame.Position = UDim2.new(0.5,-115,0.6,-100)
 frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame)
 
 -------------------------------------------------
--- Toggle button (NHỎ)
+-- Toggle nhỏ
 -------------------------------------------------
 local toggle = Instance.new("TextButton", gui)
-toggle.Size = UDim2.fromOffset(40,40) -- nhỏ hơn
+toggle.Size = UDim2.fromOffset(38,38)
 toggle.Position = UDim2.new(0.02,0,0.6,0)
 toggle.Text = "≡"
 toggle.TextScaled = true
@@ -62,10 +61,11 @@ title.TextScaled = true
 title.TextColor3 = Color3.new(1,1,1)
 
 -------------------------------------------------
--- Fly system (TỰ ĐIỀU KHIỂN HƯỚNG)
+-- Fly system
 -------------------------------------------------
 local flying = false
 local speed = 50
+local yDir = 0
 local bv
 
 local function startFly()
@@ -79,21 +79,14 @@ local function startFly()
 	bv = Instance.new("BodyVelocity", hrp)
 	bv.MaxForce = Vector3.new(1e9,1e9,1e9)
 
-	RunService:BindToRenderStep("MobileFly",0,function()
+	RunService:BindToRenderStep("FlyMove",0,function()
 		if not flying then return end
 
-		local moveDir = hum.MoveDirection -- hướng joystick
-		local y = 0
-
-		if UIS:IsKeyDown(Enum.KeyCode.Space) then
-			y = 1
-		elseif UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
-			y = -1
-		end
+		local moveDir = hum.MoveDirection
 
 		bv.Velocity = Vector3.new(
 			moveDir.X * speed,
-			y * speed,
+			yDir * speed,
 			moveDir.Z * speed
 		)
 	end)
@@ -101,16 +94,16 @@ end
 
 local function stopFly()
 	flying = false
-	RunService:UnbindFromRenderStep("MobileFly")
+	RunService:UnbindFromRenderStep("FlyMove")
 	if bv then bv:Destroy() end
 end
 
 -------------------------------------------------
--- Fly button
+-- Fly Button
 -------------------------------------------------
 local flyBtn = Instance.new("TextButton", frame)
-flyBtn.Size = UDim2.new(0.9,0,0,45)
-flyBtn.Position = UDim2.new(0.05,0,0.3,0)
+flyBtn.Size = UDim2.new(0.9,0,0,40)
+flyBtn.Position = UDim2.new(0.05,0,0.25,0)
 flyBtn.Text = "BẬT FLY"
 flyBtn.TextScaled = true
 flyBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
@@ -128,22 +121,49 @@ flyBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------
--- Speed label
+-- Nút lên / xuống (GIỮ ĐỂ BAY)
+-------------------------------------------------
+
+local up = Instance.new("TextButton", frame)
+up.Size = UDim2.new(0.4,0,0,35)
+up.Position = UDim2.new(0.05,0,0.5,0)
+up.Text = "⬆"
+Instance.new("UICorner", up)
+
+local down = Instance.new("TextButton", frame)
+down.Size = UDim2.new(0.4,0,0,35)
+down.Position = UDim2.new(0.55,0,0.5,0)
+down.Text = "⬇"
+Instance.new("UICorner", down)
+
+up.MouseButton1Down:Connect(function()
+	yDir = 1
+end)
+up.MouseButton1Up:Connect(function()
+	yDir = 0
+end)
+
+down.MouseButton1Down:Connect(function()
+	yDir = -1
+end)
+down.MouseButton1Up:Connect(function()
+	yDir = 0
+end)
+
+-------------------------------------------------
+-- Speed + -
 -------------------------------------------------
 local speedLabel = Instance.new("TextLabel", frame)
 speedLabel.Size = UDim2.new(1,0,0,25)
-speedLabel.Position = UDim2.new(0,0,0.6,0)
+speedLabel.Position = UDim2.new(0,0,0.7,0)
 speedLabel.BackgroundTransparency = 1
 speedLabel.Text = "Speed: 50"
 speedLabel.TextScaled = true
 speedLabel.TextColor3 = Color3.new(1,1,1)
 
--------------------------------------------------
--- + -
--------------------------------------------------
 local plus = Instance.new("TextButton", frame)
 plus.Size = UDim2.new(0.4,0,0,35)
-plus.Position = UDim2.new(0.55,0,0.75,0)
+plus.Position = UDim2.new(0.55,0,0.85,0)
 plus.Text = "+"
 Instance.new("UICorner", plus)
 
@@ -154,7 +174,7 @@ end)
 
 local minus = Instance.new("TextButton", frame)
 minus.Size = UDim2.new(0.4,0,0,35)
-minus.Position = UDim2.new(0.05,0,0.75,0)
+minus.Position = UDim2.new(0.05,0,0.85,0)
 minus.Text = "-"
 Instance.new("UICorner", minus)
 
