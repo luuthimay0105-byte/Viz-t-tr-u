@@ -122,18 +122,22 @@ local function stopFly()
 end
 
 -------------------------------------------------
--- NOCLIP
--------------------------------------------------
-RunService.Stepped:Connect(function()
+local PhysicsService = game:GetService("PhysicsService")
+
+pcall(function()
+	PhysicsService:CreateCollisionGroup("noclip")
+	PhysicsService:CollisionGroupSetCollidable("noclip","Default",false)
+end)
+
+RunService.Heartbeat:Connect(function()
 	if noclip and player.Character then
 		for _,v in pairs(player.Character:GetDescendants()) do
 			if v:IsA("BasePart") then
-				v.CanCollide=false
+				PhysicsService:SetPartCollisionGroup(v,"noclip")
 			end
 		end
 	end
 end)
-
 -------------------------------------------------
 -- BUTTON ACTIONS
 -------------------------------------------------
