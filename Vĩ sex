@@ -1,0 +1,44 @@
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class JumpScareUI : MonoBehaviour
+{
+    [Header("UI")]
+    public Canvas jumpCanvas;
+    public Image jumpImage;
+    public TMP_Text jumpText;
+
+    [Header("Audio")]
+    public AudioSource jumpSound;
+
+    [Header("Settings")]
+    public float scareDuration = 1.2f;
+    public string scareMessage = "vĩ địt trâu";
+
+    private bool triggered = false;
+
+    void Start()
+    {
+        jumpCanvas.gameObject.SetActive(false);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (triggered) return;
+        if (!other.CompareTag("Player")) return;
+
+        triggered = true;
+        StartCoroutine(DoJumpScare());
+    }
+
+    System.Collections.IEnumerator DoJumpScare()
+    {
+        jumpText.text = scareMessage;
+        jumpCanvas.gameObject.SetActive(true);
+
+        jumpSound.Play();
+
+        yield return new WaitForSeconds(scareDuration);
+
+        jumpCanvas.gameObject.SetActive(false);
