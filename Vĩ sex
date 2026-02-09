@@ -1,44 +1,66 @@
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+local root = char:WaitForChild("HumanoidRootPart")
 
-public class JumpScareUI : MonoBehaviour
-{
-    [Header("UI")]
-    public Canvas jumpCanvas;
-    public Image jumpImage;
-    public TMP_Text jumpText;
+-- UI
+local gui = script.Parent
+local main = gui.Main
+local toggle = gui.Toggle
 
-    [Header("Audio")]
-    public AudioSource jumpSound;
+local flyBtn = main.FlyButton
+local upBtn = main.SpeedUp
+local downBtn = main.SpeedDown
 
-    [Header("Settings")]
-    public float scareDuration = 1.2f;
-    public string scareMessage = "vĩ địt trâu";
+-- Menu toggle
+toggle.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+end)
 
-    private bool triggered = false;
+-- Speed
+local speed = 16
+hum.WalkSpeed = speed
 
-    void Start()
-    {
-        jumpCanvas.gameObject.SetActive(false);
-    }
+upBtn.MouseButton1Click:Connect(function()
+	speed += 5
+	hum.WalkSpeed = speed
+end)
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (triggered) return;
-        if (!other.CompareTag("Player")) return;
+downBtn.MouseButton1Click:Connect(function()
+	speed = math.max(5, speed - 5)
+	hum.WalkSpeed = speed
+end)
 
-        triggered = true;
-        StartCoroutine(DoJumpScare());
-    }
+-- Fly
+local flying = false
+local bv, bg
 
-    System.Collections.IEnumerator DoJumpScare()
-    {
-        jumpText.text = scareMessage;
-        jumpCanvas.gameObject.SetActive(true);
+local function startFly()
+	flying = true
 
-        jumpSound.Play();
+	bv = Instance.new("BodyVelocity")
+	bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+	bv.Velocity = Vector3.zero
+	bv.Parent = root
 
-        yield return new WaitForSeconds(scareDuration);
+	bg = Instance.new("BodyGyro")
+	bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+	bg.CFrame = root.CFrame
+	bg.Parent = root
+end
 
-        jumpCanvas.gameObject.SetActive(false);
+local function stopFly()
+	flying = false
+	if bv then bv:Destroy() end
+	if bg then bg:Destroy() end
+end
+
+flyBtn.MouseButton1Click:Connect(function()
+	if flying then
+		stopFly()
+		flyBtn.Text = "FLY"
+	else
+		startFly()
+		flyBtn.Text = "STOP FLY"
+	end
+end)
