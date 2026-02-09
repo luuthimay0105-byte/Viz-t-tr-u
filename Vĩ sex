@@ -1,11 +1,11 @@
---// ===== VĨ FLY PRO MAX =====
+--// ===== VĨ FLY FIX MOBILE 100% =====
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 
 -------------------------------------------------
--- SPLASH PIXEL
+-- SPLASH
 -------------------------------------------------
 local splash = Instance.new("ScreenGui", game.CoreGui)
 local t = Instance.new("TextLabel", splash)
@@ -24,83 +24,106 @@ splash:Destroy()
 local gui = Instance.new("ScreenGui", game.CoreGui)
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.fromOffset(320,140)
+frame.Size = UDim2.fromOffset(300,120)
 frame.Position = UDim2.new(0.1,0,0.6,0)
 frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
 frame.BorderSizePixel = 0
 
 -------------------------------------------------
--- DRAG MOBILE (FIX 100%)
+-- DRAG TOUCH (mobile thật)
 -------------------------------------------------
-local dragging, dragStart, startPos
+local dragging=false
+local startPos, startFrame
 
 frame.InputBegan:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = i.Position
-		startPos = frame.Position
+	if i.UserInputType==Enum.UserInputType.Touch then
+		dragging=true
+		startPos=i.Position
+		startFrame=frame.Position
 	end
 end)
 
 UIS.InputChanged:Connect(function(i)
-	if dragging and i.UserInputType == Enum.UserInputType.Touch then
-		local delta = i.Position - dragStart
-		frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
+	if dragging and i.UserInputType==Enum.UserInputType.Touch then
+		local d=i.Position-startPos
+		frame.Position=UDim2.new(startFrame.X.Scale,startFrame.X.Offset+d.X,startFrame.Y.Scale,startFrame.Y.Offset+d.Y)
 	end
 end)
 
 UIS.InputEnded:Connect(function()
-	dragging = false
+	dragging=false
 end)
 
 -------------------------------------------------
--- BUTTON MAKER
+-- TẠO BUTTON
 -------------------------------------------------
-local function btn(text,x,w,color)
-	local b = Instance.new("TextButton", frame)
-	b.Size = UDim2.fromOffset(w,30)
-	b.Position = UDim2.fromOffset(x,30)
-	b.Text = text
-	b.BackgroundColor3 = color
-	b.TextColor3 = Color3.new(1,1,1)
-	b.TextScaled = true
-	b.BorderSizePixel = 0
-	b.Font = Enum.Font.GothamBold
+local function btn(text,x,y,w,h,color)
+	local b=Instance.new("TextButton",frame)
+	b.Text=text
+	b.Size=UDim2.fromOffset(w,h)
+	b.Position=UDim2.fromOffset(x,y)
+	b.BackgroundColor3=color
+	b.TextColor3=Color3.new(1,1,1)
+	b.TextScaled=true
+	b.BorderSizePixel=0
+	b.Font=Enum.Font.GothamBold
 	return b
 end
 
-local RED = Color3.fromRGB(200,0,0)
-local BLACK = Color3.fromRGB(20,20,20)
+local RED=Color3.fromRGB(200,0,0)
+local BLACK=Color3.fromRGB(20,20,20)
 
 -------------------------------------------------
--- TITLE
+-- LAYOUT GIỐNG ẢNH
 -------------------------------------------------
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.fromOffset(320,30)
-title.BackgroundColor3 = RED
-title.Text = "VĨ FLY PRO"
-title.TextColor3 = Color3.new(1,1,1)
-title.TextScaled = true
-title.Font = Enum.Font.GothamBold
+btn("VĨ FLY",0,0,300,30,RED).AutoButtonColor=false
+
+local close=btn("X",0,30,60,30,RED)
+local hide=btn("-",60,30,60,30,RED)
+local flyBtn=btn("FLY",120,30,180,30,RED)
+
+local minus=btn("-",0,60,60,30,BLACK)
+local plus=btn("+",60,60,60,30,BLACK)
+local up=btn("↑",120,60,60,30,BLACK)
+local down=btn("↓",180,60,60,30,BLACK)
+local noclipBtn=btn("NOCLIP",240,60,60,30,BLACK)
 
 -------------------------------------------------
--- FLY SYSTEM (SMOOTH)
+-- FLY SYSTEM (BodyVelocity = 100% chạy)
 -------------------------------------------------
 local flying=false
 local speed=40
 local yDir=0
-local vel, ori
+local bv
 local noclip=false
 
-local function setNoclip(state)
-	noclip = state
+local function startFly()
+	local char=player.Character or player.CharacterAdded:Wait()
+	local hum=char:WaitForChild("Humanoid")
+	local hrp=char:WaitForChild("HumanoidRootPart")
+
+	flying=true
+	hum:ChangeState(Enum.HumanoidStateType.Physics)
+
+	bv=Instance.new("BodyVelocity",hrp)
+	bv.MaxForce=Vector3.new(1e9,1e9,1e9)
+
+	RunService:BindToRenderStep("FlyMove",0,function()
+		if not flying then return end
+		local dir=hum.MoveDirection
+		bv.Velocity=Vector3.new(dir.X*speed,yDir*speed,dir.Z*speed)
+	end)
 end
 
+local function stopFly()
+	flying=false
+	RunService:UnbindFromRenderStep("FlyMove")
+	if bv then bv:Destroy() end
+end
+
+-------------------------------------------------
+-- NOCLIP
+-------------------------------------------------
 RunService.Stepped:Connect(function()
 	if noclip and player.Character then
 		for _,v in pairs(player.Character:GetDescendants()) do
@@ -111,79 +134,9 @@ RunService.Stepped:Connect(function()
 	end
 end)
 
-local function startFly()
-	local char = player.Character
-	if not char then return end
-
-	local hrp = char:WaitForChild("HumanoidRootPart")
-
-	vel = Instance.new("LinearVelocity", hrp)
-	vel.MaxForce = math.huge
-
-	ori = Instance.new("AlignOrientation", hrp)
-	ori.MaxTorque = math.huge
-	ori.Responsiveness = 25
-
-	flying=true
-
-	RunService:BindToRenderStep("FlyMove",0,function()
-		if not flying then return end
-
-		local dir = char.Humanoid.MoveDirection
-		vel.VectorVelocity = Vector3.new(dir.X*speed,yDir*speed,dir.Z*speed)
-	end)
-end
-
-local function stopFly()
-	flying=false
-	RunService:UnbindFromRenderStep("FlyMove")
-	if vel then vel:Destroy() end
-	if ori then ori:Destroy() end
-end
-
 -------------------------------------------------
--- BUTTONS
+-- BUTTON ACTIONS
 -------------------------------------------------
-
-local close = btn("X",0,50,RED)
-local hide  = btn("-",50,50,RED)
-local flyBtn= btn("FLY",100,80,RED)
-local noclipBtn= btn("NOCLIP",180,90,RED)
-
-local minus = btn("-",0,70,BLACK)
-minus.Position = UDim2.fromOffset(0,70)
-
-local plus = btn("+",70,70,BLACK)
-plus.Position = UDim2.fromOffset(70,70)
-
-local up = btn("↑",140,70,BLACK)
-up.Position = UDim2.fromOffset(140,70)
-
-local down = btn("↓",210,70,BLACK)
-down.Position = UDim2.fromOffset(210,70)
-
-local speedLabel = Instance.new("TextLabel", frame)
-speedLabel.Position = UDim2.fromOffset(280,70)
-speedLabel.Size = UDim2.fromOffset(40,30)
-speedLabel.BackgroundColor3 = BLACK
-speedLabel.TextColor3 = Color3.new(1,1,1)
-speedLabel.Text = tostring(speed)
-speedLabel.TextScaled = true
-
--------------------------------------------------
--- ACTIONS
--------------------------------------------------
-
-close.MouseButton1Click:Connect(function()
-	gui:Destroy()
-end)
-
-local mini=false
-hide.MouseButton1Click:Connect(function()
-	mini=not mini
-	frame.Size = mini and UDim2.fromOffset(320,30) or UDim2.fromOffset(320,140)
-end)
-
 flyBtn.MouseButton1Click:Connect(function()
 	if flying then
 		stopFly()
@@ -194,19 +147,12 @@ flyBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
-noclipBtn.MouseButton1Click:Connect(function()
-	setNoclip(not noclip)
-	noclipBtn.Text = noclip and "CLIP" or "NOCLIP"
-end)
-
 plus.MouseButton1Click:Connect(function()
-	speed = math.clamp(speed+10,10,80)
-	speedLabel.Text = speed
+	speed=math.clamp(speed+10,10,80)
 end)
 
 minus.MouseButton1Click:Connect(function()
-	speed = math.clamp(speed-10,10,80)
-	speedLabel.Text = speed
+	speed=math.clamp(speed-10,10,80)
 end)
 
 up.MouseButton1Down:Connect(function() yDir=1 end)
@@ -214,3 +160,15 @@ up.MouseButton1Up:Connect(function() yDir=0 end)
 
 down.MouseButton1Down:Connect(function() yDir=-1 end)
 down.MouseButton1Up:Connect(function() yDir=0 end)
+
+noclipBtn.MouseButton1Click:Connect(function()
+	noclip=not noclip
+end)
+
+close.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+hide.MouseButton1Click:Connect(function()
+	frame.Size = frame.Size.Y.Offset==30 and UDim2.fromOffset(300,120) or UDim2.fromOffset(300,30)
+end)
