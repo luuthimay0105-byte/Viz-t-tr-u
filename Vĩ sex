@@ -1,5 +1,5 @@
 --// =========================================
--- 🔥 VĨ HUB REDZ STYLE + INTRO + NOTIFY
+-- 🔥 VĨ HUB PRO TOGGLE FIX (ON/OFF FULL)
 -- =========================================
 
 local Players = game:GetService("Players")
@@ -12,221 +12,281 @@ local player = Players.LocalPlayer
 -- GUI
 -------------------------------------------------
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "ViHubPro"
 
 -------------------------------------------------
--- 🔥 TEXT EFFECT (INTRO + NOTIFY)
+-- NOTIFY TEXT
 -------------------------------------------------
-local function showText(msg,color)
+local function notify(txt,color)
+	local t=Instance.new("TextLabel",gui)
+	t.Size=UDim2.new(1,0,1,0)
+	t.BackgroundTransparency=1
+	t.Font=Enum.Font.Arcade
+	t.TextScaled=true
+	t.Text=txt
+	t.TextColor3=color or Color3.new(1,1,1)
+	t.TextTransparency=1
 
-	local label = Instance.new("TextLabel", gui)
-	label.Size = UDim2.new(1,0,1,0)
-	label.BackgroundTransparency = 1
-	label.Text = msg
-	label.Font = Enum.Font.Arcade
-	label.TextScaled = true
-	label.TextColor3 = color or Color3.fromRGB(255,80,80)
-	label.TextTransparency = 1
-
-	for i=1,0,-0.05 do
-		label.TextTransparency=i
-		task.wait()
-	end
-
-	task.wait(1)
-
-	for i=0,1,0.05 do
-		label.TextTransparency=i
-		task.wait()
-	end
-
-	label:Destroy()
+	for i=1,0,-0.05 do t.TextTransparency=i task.wait() end
+	task.wait(0.8)
+	for i=0,1,0.05 do t.TextTransparency=i task.wait() end
+	t:Destroy()
 end
 
--- INTRO
 task.spawn(function()
-	showText("VĨ ĐỊT TRÂU")
+	notify("VĨ ĐỊT TRÂU")
 end)
 
 -------------------------------------------------
--- RAINBOW STROKE
+-- MAIN UI
 -------------------------------------------------
-local function rainbow(obj)
-	local s = Instance.new("UIStroke",obj)
-	s.Thickness=2
+local menu=Instance.new("TextButton",gui)
+menu.Size=UDim2.fromOffset(55,55)
+menu.Position=UDim2.new(0,20,0.6,0)
+menu.Text="VĨ"
+menu.TextScaled=true
+menu.BackgroundColor3=Color3.fromRGB(35,35,35)
 
-	task.spawn(function()
-		local h=0
-		while obj.Parent do
-			h+=0.01
-			s.Color=Color3.fromHSV(h%1,1,1)
-			task.wait()
-		end
-	end)
-end
+local frame=Instance.new("Frame",gui)
+-------------------------------------------------
+-- 🔥 ESP TAB
+-------------------------------------------------
 
--------------------------------------------------
--- MENU BUTTON
--------------------------------------------------
-local menu = Instance.new("TextButton", gui)
-menu.Size = UDim2.fromOffset(55,55)
-menu.Position = UDim2.new(0,15,0.6,0)
-menu.Text = "VĨ"
-menu.TextScaled = true
-menu.BackgroundColor3 = Color3.fromRGB(35,35,35)
-menu.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner",menu)
-rainbow(menu)
+local espFrame = Instance.new("Frame", gui)
+espFrame.Size = frame.Size
+espFrame.Position = frame.Position
+espFrame.Visible = false
+espFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+
+local espLayout = Instance.new("UIListLayout", espFrame)
+espLayout.Padding = UDim.new(0,5)
 
 -------------------------------------------------
--- MAIN
+-- TAB BUTTON
 -------------------------------------------------
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.fromOffset(380,330)
-main.Position = UDim2.new(0.3,0,0.25,0)
-main.Visible=false
-main.BackgroundColor3=Color3.fromRGB(25,25,25)
-Instance.new("UICorner",main)
-rainbow(main)
 
-menu.MouseButton1Click:Connect(function()
-	main.Visible = not main.Visible
-	showText("Menu Toggle")
+make("ESP TAB", function()
+	frame.Visible = false
+	espFrame.Visible = true
 end)
 
--------------------------------------------------
--- DRAG
--------------------------------------------------
-local drag,start,pos
-main.InputBegan:Connect(function(i)
-	if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
-		drag=true
-		start=i.Position
-		pos=main.Position
-	end
-end)
-main.InputEnded:Connect(function() drag=false end)
-main.InputChanged:Connect(function(i)
-	if drag then
-		local d=i.Position-start
-		main.Position=UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
-	end
-end)
-
--------------------------------------------------
--- TAB SYSTEM
--------------------------------------------------
-local tabBar=Instance.new("Frame",main)
-tabBar.Size=UDim2.new(0,110,1,0)
-tabBar.BackgroundColor3=Color3.fromRGB(30,30,30)
-
-local pages=Instance.new("Frame",main)
-pages.Position=UDim2.new(0,110,0,0)
-pages.Size=UDim2.new(1,-110,1,0)
-pages.BackgroundTransparency=1
-
-local function page()
-	local f=Instance.new("Frame",pages)
-	f.Size=UDim2.new(1,0,1,0)
-	f.Visible=false
-	local l=Instance.new("UIListLayout",f)
-	l.Padding=UDim.new(0,6)
-	return f
-end
-
-local farm=page()
-local tp=page()
-local world=page()
-farm.Visible=true
-
-local function tab(name,p,y)
-	local b=Instance.new("TextButton",tabBar)
-	b.Size=UDim2.new(1,0,0,45)
-	b.Position=UDim2.new(0,0,0,y)
+local function makeESP(name,callback)
+	local b=Instance.new("TextButton",espFrame)
+	b.Size=UDim2.new(1,0,0,36)
 	b.Text=name
 	b.TextScaled=true
-	b.BackgroundColor3=Color3.fromRGB(45,45,45)
-	b.TextColor3=Color3.new(1,1,1)
-	rainbow(b)
-
-	b.MouseButton1Click:Connect(function()
-		for _,v in pairs(pages:GetChildren()) do v.Visible=false end
-		p.Visible=true
-	end)
+	b.BackgroundColor3=Color3.fromRGB(55,55,55)
+	b.MouseButton1Click:Connect(callback)
 end
 
-tab("Farm",farm,0)
-tab("Teleport",tp,45)
-tab("World",world,90)
+makeESP("<< Back", function()
+	espFrame.Visible=false
+	frame.Visible=true
+end)-------------------------------------------------
+-- 🔥 GLOW ME
+-------------------------------------------------
+local glow=false
+local myHighlight
+
+makeESP("Glow Me",function()
+
+	glow=not glow
+
+	if glow then
+		myHighlight=Instance.new("Highlight",player.Character)
+		myHighlight.FillTransparency=0.3
+
+		task.spawn(function()
+			local h=0
+			while glow and myHighlight do
+				h+=0.01
+				myHighlight.FillColor=Color3.fromHSV(h%1,1,1)
+				task.wait()
+			end
+		end)
+
+		notify("Glow ON")
+	else
+		if myHighlight then myHighlight:Destroy() end
+		notify("Glow OFF")
+	end
+end)
+
+-------------------------------------------------
+-- 🔥 PLAYER ESP
+-------------------------------------------------
+local playerESP=false
+local playerHL={}
+
+makeESP("Player ESP",function()
+
+	playerESP=not playerESP
+
+	if playerESP then
+		for _,plr in pairs(game.Players:GetPlayers()) do
+			if plr~=player and plr.Character then
+				local h=Instance.new("Highlight",plr.Character)
+				h.FillColor=Color3.fromRGB(255,0,0)
+				playerHL[plr]=h
+			end
+		end
+		notify("Player ESP ON")
+	else
+		for _,h in pairs(playerHL) do h:Destroy() end
+		playerHL={}
+		notify("Player ESP OFF")
+	end
+end)
+
+-------------------------------------------------
+-- 🔥 FRUIT ESP
+-------------------------------------------------
+local fruitESP=false
+local fruitHL={}
+
+makeESP("Fruit ESP",function()
+
+	fruitESP=not fruitESP
+
+	if fruitESP then
+		for _,v in pairs(workspace:GetDescendants()) do
+			if string.find(v.Name,"Fruit") and v:IsA("Model") then
+				local h=Instance.new("Highlight",v)
+				h.FillColor=Color3.fromRGB(0,255,0)
+				table.insert(fruitHL,h)
+			end
+		end
+		notify("Fruit ESP ON")
+	else
+		for _,h in pairs(fruitHL) do h:Destroy() end
+		fruitHL={}
+		notify("Fruit ESP OFF")
+	end
+end)
+
+-------------------------------------------------
+-- 🔥 CHEST ESP
+-------------------------------------------------
+local chestESP=false
+local chestHL={}
+
+makeESP("Chest ESP",function()
+
+	chestESP=not chestESP
+
+	if chestESP then
+		for _,v in pairs(workspace:GetDescendants()) do
+			if string.find(v.Name,"Chest") then
+				local h=Instance.new("Highlight",v)
+				h.FillColor
+frame.Size=UDim2.fromOffset(260,350)
+frame.Position=UDim2.new(0,90,0.3,0)
+frame.Visible=false
+frame.BackgroundColor3=Color3.fromRGB(30,30,30)
+
+menu.MouseButton1Click:Connect(function()
+	frame.Visible=not frame.Visible
+end)
+
+local layout=Instance.new("UIListLayout",frame)
+layout.Padding=UDim.new(0,5)
 
 -------------------------------------------------
 -- BUTTON MAKER
 -------------------------------------------------
-local function make(parent,text,func)
-	local b=Instance.new("TextButton",parent)
+local function make(name,callback)
+	local b=Instance.new("TextButton",frame)
 	b.Size=UDim2.new(1,0,0,36)
-	b.Text=text
+	b.Text=name
 	b.TextScaled=true
 	b.BackgroundColor3=Color3.fromRGB(55,55,55)
-	b.TextColor3=Color3.new(1,1,1)
-	Instance.new("UICorner",b)
-	rainbow(b)
 
-	b.MouseButton1Click:Connect(function()
-		func()
-		showText(text.." ✓",Color3.fromRGB(0,255,120))
-	end)
+	b.MouseButton1Click:Connect(callback)
+	return b
 end
 
 -------------------------------------------------
--- FARM TAB
+-- SPEED TOGGLE
 -------------------------------------------------
-make(farm,"Speed 40",function()
-	player.Character.Humanoid.WalkSpeed=40
+local speed=false
+make("Speed",function()
+	speed=not speed
+	player.Character.Humanoid.WalkSpeed=speed and 40 or 16
+	notify("Speed "..(speed and "ON" or "OFF"))
 end)
 
-make(farm,"Fly",function()
+-------------------------------------------------
+-- FLY TOGGLE
+-------------------------------------------------
+local flying=false
+local bv
+
+make("Fly",function()
 	local hrp=player.Character.HumanoidRootPart
-	local bv=Instance.new("BodyVelocity",hrp)
-	bv.MaxForce=Vector3.new(1e9,1e9,1e9)
-	RunService:BindToRenderStep("Fly",0,function()
-		bv.Velocity=player.Character.Humanoid.MoveDirection*80
-	end)
+	local hum=player.Character.Humanoid
+
+	flying=not flying
+
+	if flying then
+		bv=Instance.new("BodyVelocity",hrp)
+		bv.MaxForce=Vector3.new(1e9,1e9,1e9)
+
+		RunService:BindToRenderStep("Fly",0,function()
+			bv.Velocity=hum.MoveDirection*80
+		end)
+	else
+		RunService:UnbindFromRenderStep("Fly")
+		if bv then bv:Destroy() end
+	end
+
+	notify("Fly "..(flying and "ON" or "OFF"))
 end)
 
-make(farm,"TP Mob",function()
-	for _,v in pairs(workspace.Enemies:GetChildren()) do
-		if v:FindFirstChild("HumanoidRootPart") then
-			player.Character.HumanoidRootPart.CFrame=v.HumanoidRootPart.CFrame*CFrame.new(0,25,0)
-			break
+-------------------------------------------------
+-- GATHER TOGGLE
+-------------------------------------------------
+local gather=false
+
+make("Gather Mob",function()
+	gather=not gather
+	notify("Gather "..(gather and "ON" or "OFF"))
+end)
+
+RunService.RenderStepped:Connect(function()
+	if gather then
+		local hrp=player.Character.HumanoidRootPart
+		for _,v in pairs(workspace.Enemies:GetChildren()) do
+			if v:FindFirstChild("HumanoidRootPart") then
+				v.HumanoidRootPart.CFrame=hrp.CFrame*CFrame.new(0,0,-5)
+			end
 		end
 	end
 end)
 
-make(farm,"Gather Mob",function()
-	local hrp=player.Character.HumanoidRootPart
-	for _,v in pairs(workspace.Enemies:GetChildren()) do
-		if v:FindFirstChild("HumanoidRootPart") then
-			v.HumanoidRootPart.CFrame=hrp.CFrame*CFrame.new(0,0,-5)
+-------------------------------------------------
+-- FIX LAG TOGGLE
+-------------------------------------------------
+local lag=false
+
+make("Fix Lag",function()
+	lag=not lag
+
+	if lag then
+		Lighting.GlobalShadows=false
+		for _,v in pairs(workspace:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.Material=Enum.Material.SmoothPlastic
+			end
 		end
+	else
+		Lighting.GlobalShadows=true
 	end
+
+	notify("Fix Lag "..(lag and "ON" or "OFF"))
 end)
 
 -------------------------------------------------
--- TELEPORT TAB
+-- CLOSE
 -------------------------------------------------
-make(tp,"Spawn",function()
-	player.Character.HumanoidRootPart.CFrame=CFrame.new(0,10,0)
-end)
-
--------------------------------------------------
--- WORLD TAB
--------------------------------------------------
-make(world,"Fix Lag",function()
-	Lighting.GlobalShadows=false
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.Material=Enum.Material.SmoothPlastic
-		end
-	end
+make("Close",function()
+	frame.Visible=false
 end)
