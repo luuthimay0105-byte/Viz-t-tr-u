@@ -1,6 +1,4 @@
---// =========================
---// 🔥 VĨ HUB FULL MENU 🔥
---// =========================
+--// 🔥 VĨ HUB FIX MOBILE 🔥
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -9,67 +7,68 @@ local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
 
 -------------------------------------------------
--- GUI
+-- GUI (CoreGui = ổn định hơn PlayerGui)
 -------------------------------------------------
-local gui = Instance.new("ScreenGui", player.PlayerGui)
+local gui = Instance.new("ScreenGui")
+gui.Parent = game.CoreGui
 gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
-gui.DisplayOrder = 999999
+gui.Name = "ViHub"
 
 -------------------------------------------------
 -- 🌈 rainbow
 -------------------------------------------------
 local function rainbow(obj)
 	task.spawn(function()
-		local h = 0
+		local h=0
 		while obj.Parent do
-			h += 0.01
-			if h > 1 then h = 0 end
-			obj.BackgroundColor3 = Color3.fromHSV(h,1,1)
+			h+=0.01
+			obj.BackgroundColor3 = Color3.fromHSV(h%1,1,1)
 			task.wait()
 		end
 	end)
 end
 
 -------------------------------------------------
--- MENU BUTTON
+-- 🔳 NÚT VĨ (VUÔNG + NHỎ)
 -------------------------------------------------
 local menuBtn = Instance.new("TextButton", gui)
-menuBtn.Size = UDim2.fromOffset(70,70)
-menuBtn.Position = UDim2.new(1,-90,1,-120)
+menuBtn.Size = UDim2.fromOffset(50,50) -- nhỏ hơn
+menuBtn.Position = UDim2.new(0,15,0.6,0)
 menuBtn.Text = "VĨ"
 menuBtn.TextScaled = true
+menuBtn.Font = Enum.Font.GothamBold
 menuBtn.TextColor3 = Color3.new(1,1,1)
-menuBtn.Font = Enum.Font.GothamBlack
-menuBtn.Draggable = true
+menuBtn.BorderSizePixel = 0
+menuBtn.Draggable = true -- kéo được
 
-Instance.new("UICorner", menuBtn).CornerRadius = UDim.new(1,0)
 rainbow(menuBtn)
 
 -------------------------------------------------
--- MAIN FRAME
+-- FRAME MENU
 -------------------------------------------------
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.fromOffset(260,380)
-frame.Position = UDim2.new(1,-280,0.5,-190)
+frame.Size = UDim2.fromOffset(230,330)
+frame.Position = UDim2.new(0,80,0.4,0)
 frame.Visible = false
 frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.BorderSizePixel = 0
 
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,18)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
 
 local layout = Instance.new("UIListLayout", frame)
 layout.Padding = UDim.new(0,6)
 
 -------------------------------------------------
--- BUTTON CREATOR
+-- BUTTON MAKER
 -------------------------------------------------
 local function makeBtn(text)
 	local b = Instance.new("TextButton", frame)
-	b.Size = UDim2.new(0.92,0,0,40)
+	b.Size = UDim2.new(0.92,0,0,38)
 	b.Text = text
 	b.TextScaled = true
 	b.TextColor3 = Color3.new(1,1,1)
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,12)
+	b.BorderSizePixel = 0
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
 	rainbow(b)
 	return b
 end
@@ -77,66 +76,17 @@ end
 -------------------------------------------------
 -- BUTTONS
 -------------------------------------------------
-local autoHitBtn = makeBtn("⚔ Auto Hit")
-local autoClickBtn = makeBtn("🖱 Auto Click")
-
 local flyBtn = makeBtn("✈ Fly")
 local speedBtn = makeBtn("⚡ Speed")
 local noclipBtn = makeBtn("👻 NoClip")
-
 local lagBtn = makeBtn("🚀 Fix Lag")
-local tpBtn = makeBtn("📍 Teleport Player")
-
 local closeBtn = makeBtn("❌ Close")
 
 -------------------------------------------------
--- TOGGLE MENU
+-- BẬT / TẮT MENU (SỬA LỖI KHÔNG MỞ)
 -------------------------------------------------
-menuBtn.Activated:Connect(function()
+menuBtn.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
-end)
-
--------------------------------------------------
--- ⚔ AUTO HIT
--------------------------------------------------
-local autoHit=false
-
-RunService.Heartbeat:Connect(function()
-	if autoHit then
-		local char = player.Character
-		local hrp = char and char:FindFirstChild("HumanoidRootPart")
-		if not hrp then return end
-
-		for _,v in pairs(workspace:GetDescendants()) do
-			if v:IsA("Model") and v:FindFirstChild("Humanoid")
-			and v:FindFirstChild("HumanoidRootPart")
-			and v.Name ~= player.Name then
-
-				hrp.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
-				break
-			end
-		end
-	end
-end)
-
-autoHitBtn.Activated:Connect(function()
-	autoHit = not autoHit
-end)
-
--------------------------------------------------
--- 🖱 AUTO CLICK
--------------------------------------------------
-local autoClick=false
-
-autoClickBtn.Activated:Connect(function()
-	autoClick = not autoClick
-
-	task.spawn(function()
-		while autoClick do
-			mouse1click()
-			task.wait(0.1)
-		end
-	end)
 end)
 
 -------------------------------------------------
@@ -145,10 +95,14 @@ end)
 local flying=false
 local bv
 
-flyBtn.Activated:Connect(function()
+flyBtn.MouseButton1Click:Connect(function()
+
 	local char = player.Character
-	local hum = char:WaitForChild("Humanoid")
-	local hrp = char:WaitForChild("HumanoidRootPart")
+	if not char then return end
+
+	local hum = char:FindFirstChild("Humanoid")
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hum or not hrp then return end
 
 	if not flying then
 		bv = Instance.new("BodyVelocity", hrp)
@@ -166,17 +120,18 @@ flyBtn.Activated:Connect(function()
 end)
 
 -------------------------------------------------
--- ⚡ SPEED
+-- SPEED
 -------------------------------------------------
 local speed=false
-speedBtn.Activated:Connect(function()
-	local hum = player.Character:WaitForChild("Humanoid")
+
+speedBtn.MouseButton1Click:Connect(function()
+	local hum = player.Character:FindFirstChild("Humanoid")
 	speed = not speed
 	hum.WalkSpeed = speed and 40 or 16
 end)
 
 -------------------------------------------------
--- 👻 NOCLIP
+-- NOCLIP
 -------------------------------------------------
 local noclip=false
 
@@ -184,40 +139,24 @@ RunService.Stepped:Connect(function()
 	if noclip and player.Character then
 		for _,v in pairs(player.Character:GetDescendants()) do
 			if v:IsA("BasePart") then
-				v.CanCollide = false
+				v.CanCollide=false
 			end
 		end
 	end
 end)
 
-noclipBtn.Activated:Connect(function()
+noclipBtn.MouseButton1Click:Connect(function()
 	noclip = not noclip
 end)
 
 -------------------------------------------------
--- 🚀 FIX LAG
+-- FIX LAG
 -------------------------------------------------
-lagBtn.Activated:Connect(function()
-	Lighting.GlobalShadows = false
-
+lagBtn.MouseButton1Click:Connect(function()
+	Lighting.GlobalShadows=false
 	for _,v in pairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") then
-			v.Material = Enum.Material.SmoothPlastic
-		end
-	end
-end)
-
--------------------------------------------------
--- 📍 TELEPORT PLAYER
--------------------------------------------------
-tpBtn.Activated:Connect(function()
-	local char = player.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-
-	for _,plr in pairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			hrp.CFrame = plr.Character.HumanoidRootPart.CFrame
-			break
+			v.Material=Enum.Material.SmoothPlastic
 		end
 	end
 end)
@@ -225,6 +164,6 @@ end)
 -------------------------------------------------
 -- CLOSE
 -------------------------------------------------
-closeBtn.Activated:Connect(function()
+closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible=false
 end)
