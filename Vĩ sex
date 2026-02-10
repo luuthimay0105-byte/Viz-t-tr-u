@@ -31,7 +31,51 @@ img.BackgroundTransparency = 1
 img.Visible = false
 
 -- ⚠️ DÁN ID ẢNH CỦA BẠN VÀO ĐÂY
-img.Image = "132542623226170"
+img.Image = "rbxassetid://--// MENU IMAGE SIMPLE
+
+local player = game.Players.LocalPlayer
+
+----------------------------------
+-- GUI
+----------------------------------
+local gui = Instance.new("ScreenGui", game.CoreGui)
+
+----------------------------------
+-- NÚT MENU NHỎ
+----------------------------------
+local btn = Instance.new("TextButton", gui)
+btn.Size = UDim2.fromOffset(70,35)
+btn.Position = UDim2.new(0,20,0.6,0)
+btn.Text = "MENU"
+btn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+btn.TextColor3 = Color3.new(1,1,1)
+btn.TextScaled = true
+btn.Font = Enum.Font.GothamBold
+btn.BorderSizePixel = 0
+btn.Draggable = true -- kéo được mobile
+
+----------------------------------
+-- ẢNH
+----------------------------------
+local img = Instance.new("ImageLabel", gui)
+img.Size = UDim2.fromOffset(300,300)
+img.Position = UDim2.new(0.5,-150,0.5,-150)
+img.BackgroundTransparency = 1
+img.Visible = false
+
+-- ⚠️ DÁN ID ẢNH CỦA BẠN VÀO ĐÂY
+img.Image = "rbxassetid://132542623226170"
+
+-------------
+-- BẤM HIỆN / ẨN
+----------------------------------
+local show = false
+
+btn.MouseButton1Click:Connect(function()
+	show = not show
+	img.Visible = show
+end)https://www.roblox.com/vi/catalog/132542623226170/IMG-20240825-170651"
+
 
 ----------------------------------
 -- BẤM HIỆN / ẨN
