@@ -1,21 +1,24 @@
 --// =========================================
--- 🔥 VĨ FIX LAG HUB + TEXT + SOUND
--- SAFE 100% (FPS BOOST ONLY)
+-- 🔥 VĨ FIX LAG HUB FINAL (DRAG + SOUND FIX)
 -- =========================================
 
 local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
 
 -------------------------------------------------
 -- GUI
 -------------------------------------------------
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local gui = Instance.new("ScreenGui")
+gui.Parent = game.CoreGui
+gui.ResetOnSpawn = false
 
 -------------------------------------------------
--- 🔊 SOUND
+-- 🔊 SOUND (FIXED)
 -------------------------------------------------
-local sound = Instance.new("Sound", gui)
-sound.SoundId = "rbxassetid://9118828564" -- click sound
-sound.Volume = 2
+local sound = Instance.new("Sound")
+sound.Parent = SoundService -- 🔥 quan trọng
+sound.SoundId = "rbxassetid://9118828564"
+sound.Volume = 3
 
 local function playSound()
 	sound:Play()
@@ -32,18 +35,18 @@ local function showText(msg,color)
 	t.Text = msg
 	t.Font = Enum.Font.Arcade
 	t.TextScaled = true
-	t.TextColor3 = color or Color3.fromRGB(255,80,80)
+	t.TextColor3 = color or Color3.new(1,1,1)
 	t.TextTransparency = 1
 
 	for i=1,0,-0.05 do
-		t.TextTransparency = i
+		t.TextTransparency=i
 		task.wait()
 	end
 
 	task.wait(1)
 
 	for i=0,1,0.05 do
-		t.TextTransparency = i
+		t.TextTransparency=i
 		task.wait()
 	end
 
@@ -55,6 +58,7 @@ end
 -------------------------------------------------
 task.spawn(function()
 	showText("VĨ ĐỊT TRÂU", Color3.fromRGB(255,80,80))
+	playSound()
 end)
 
 -------------------------------------------------
@@ -62,18 +66,30 @@ end)
 -------------------------------------------------
 local menu = Instance.new("TextButton", gui)
 menu.Size = UDim2.fromOffset(60,60)
-menu.Position = UDim2.new(0,20,0.6,0)
+menu.Position = UDim2.new(0,30,0.6,0)
 menu.Text = "VĨ"
 menu.Font = Enum.Font.Arcade
 menu.TextScaled = true
 menu.BackgroundColor3 = Color3.fromRGB(30,30,30)
 
+-------------------------------------------------
+-- DRAG MOBILE + PC (FIXED)
+-------------------------------------------------
+menu.Active = true
+menu.Draggable = true
+
+-------------------------------------------------
+-- FRAME
+-------------------------------------------------
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.fromOffset(230,230)
-frame.Position = UDim2.new(0,90,0.35,0)
+frame.Position = UDim2.new(0,100,0.35,0)
 frame.Visible = false
 frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 
+-------------------------------------------------
+-- OPEN MENU
+-------------------------------------------------
 menu.MouseButton1Click:Connect(function()
 	playSound()
 	frame.Visible = not frame.Visible
@@ -98,16 +114,14 @@ local function make(name, func)
 	b.BackgroundColor3 = Color3.fromRGB(55,55,55)
 
 	b.MouseButton1Click:Connect(function()
-
 		playSound()
 		showText("VĨ CẮN NÉN", Color3.fromRGB(0,255,150))
-
 		func()
 	end)
 end
 
 -------------------------------------------------
--- ⚡ FIX LAG
+-- FIX LAG
 -------------------------------------------------
 local lag=false
 
@@ -115,12 +129,6 @@ local function optimize()
 
 	Lighting.GlobalShadows=false
 	Lighting.FogEnd=9e9
-
-	for _,v in pairs(Lighting:GetChildren()) do
-		if v:IsA("PostEffect") then
-			v.Enabled=false
-		end
-	end
 
 	for _,v in pairs(workspace:GetDescendants()) do
 
@@ -134,7 +142,6 @@ local function optimize()
 
 		if v:IsA("BasePart") then
 			v.Material=Enum.Material.SmoothPlastic
-			v.Reflectance=0
 		end
 
 		if v:IsA("Decal") or v:IsA("Texture") then
@@ -156,17 +163,17 @@ make("⚡ Fix Lag", function()
 end)
 
 -------------------------------------------------
--- 💡 FULLBRIGHT
+-- FULLBRIGHT
 -------------------------------------------------
 local bright=false
 
 make("💡 FullBright", function()
-	bright = not bright
+	bright=not bright
 	Lighting.Brightness = bright and 3 or 1
 end)
 
 -------------------------------------------------
--- ❌ CLOSE
+-- CLOSE
 -------------------------------------------------
 make("Close", function()
 	frame.Visible=false
