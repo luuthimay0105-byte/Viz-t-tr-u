@@ -1,88 +1,109 @@
---// MENU IMAGE SIMPLE
+--// ===== VĨ CẮN NÉN MENU PRO =====
 
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
 
-----------------------------------
+-------------------------------------------------
 -- GUI
-----------------------------------
+-------------------------------------------------
 local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "ViMenu"
 
-----------------------------------
--- NÚT MENU NHỎ
-----------------------------------
-local btn = Instance.new("TextButton", gui)
-btn.Size = UDim2.fromOffset(70,35)
-btn.Position = UDim2.new(0,20,0.6,0)
-btn.Text = "MENU"
-btn.BackgroundColor3 = Color3.fromRGB(200,0,0)
-btn.TextColor3 = Color3.new(1,1,1)
-btn.TextScaled = true
-btn.Font = Enum.Font.GothamBold
-btn.BorderSizePixel = 0
-btn.Draggable = true -- kéo được mobile
+-------------------------------------------------
+-- NÚT MENU ĐẸP
+-------------------------------------------------
+local menuBtn = Instance.new("TextButton", gui)
+menuBtn.Size = UDim2.fromOffset(90,40)
+menuBtn.Position = UDim2.new(0,20,0.6,0)
+menuBtn.Text = "MENU"
+menuBtn.TextScaled = true
+menuBtn.Font = Enum.Font.GothamBold
+menuBtn.TextColor3 = Color3.new(1,1,1)
+menuBtn.BorderSizePixel = 0
+menuBtn.AutoButtonColor = false
+menuBtn.Draggable = true
 
-----------------------------------
--- ẢNH
-----------------------------------
-local img = Instance.new("ImageLabel", gui)
-img.Size = UDim2.fromOffset(300,300)
-img.Position = UDim2.new(0.5,-150,0.5,-150)
-img.BackgroundTransparency = 1
-img.Visible = false
+local grad = Instance.new("UIGradient", menuBtn)
+grad.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,120)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(0,170,255))
+}
 
--- ⚠️ DÁN ID ẢNH CỦA BẠN VÀO ĐÂY
-img.Image = "rbxassetid://--// MENU IMAGE SIMPLE
+-------------------------------------------------
+-- FRAME MENU
+-------------------------------------------------
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.fromOffset(260,170)
+frame.Position = UDim2.new(0.5,-130,0.5,-85)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.Visible = false
 
-local player = game.Players.LocalPlayer
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
 
-----------------------------------
--- GUI
-----------------------------------
-local gui = Instance.new("ScreenGui", game.CoreGui)
+-------------------------------------------------
+-- TITLE
+-------------------------------------------------
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,35)
+title.Text = "VĨ CẮN NÉN"
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundColor3 = Color3.fromRGB(200,0,0)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
 
-----------------------------------
--- NÚT MENU NHỎ
-----------------------------------
-local btn = Instance.new("TextButton", gui)
-btn.Size = UDim2.fromOffset(70,35)
-btn.Position = UDim2.new(0,20,0.6,0)
-btn.Text = "MENU"
-btn.BackgroundColor3 = Color3.fromRGB(200,0,0)
-btn.TextColor3 = Color3.new(1,1,1)
-btn.TextScaled = true
-btn.Font = Enum.Font.GothamBold
-btn.BorderSizePixel = 0
-btn.Draggable = true -- kéo được mobile
+-------------------------------------------------
+-- BUTTON MAKER
+-------------------------------------------------
+local function makeBtn(text,y)
+	local b = Instance.new("TextButton", frame)
+	b.Size = UDim2.new(0.9,0,0,30)
+	b.Position = UDim2.new(0.05,0,0,y)
+	b.Text = text
+	b.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.TextScaled = true
+	b.Font = Enum.Font.GothamBold
+	return b
+end
 
-----------------------------------
--- ẢNH
-----------------------------------
-local img = Instance.new("ImageLabel", gui)
-img.Size = UDim2.fromOffset(300,300)
-img.Position = UDim2.new(0.5,-150,0.5,-150)
-img.BackgroundTransparency = 1
-img.Visible = false
+local flyBtn = makeBtn("FLY ON/OFF",45)
+local tpBtn = makeBtn("BAY TỚI PLAYER",80)
+local hideBtn = makeBtn("ẨN MÀN HÌNH",115)
 
--- ⚠️ DÁN ID ẢNH CỦA BẠN VÀO ĐÂY
-img.Image = "rbxassetid://132542623226170"
+-------------------------------------------------
+-- HIỆU ỨNG MỞ MENU
+-------------------------------------------------
+menuBtn.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+	frame.BackgroundTransparency = 1
 
--------------
--- BẤM HIỆN / ẨN
-----------------------------------
-local show = false
-
-btn.MouseButton1Click:Connect(function()
-	show = not show
-	img.Visible = show
-end)https://www.roblox.com/vi/catalog/132542623226170/IMG-20240825-170651"
-
-
-----------------------------------
--- BẤM HIỆN / ẨN
-----------------------------------
-local show = false
-
-btn.MouseButton1Click:Connect(function()
-	show = not show
-	img.Visible = show
+	for i=1,10 do
+		frame.BackgroundTransparency = 1 - i/10
+		task.wait(0.01)
+	end
 end)
+
+-------------------------------------------------
+-- FLY SYSTEM (mobile safe)
+-------------------------------------------------
+local flying=false
+local speed=45
+local bv
+
+local function startFly()
+	local char = player.Character
+	if not char then return end
+
+	local hum = char:WaitForChild("Humanoid")
+	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	bv = Instance.new("BodyVelocity", hrp)
+	bv.MaxForce = Vector3.new(1e9,1e9,1e9)
+
+	flying=true
+
+	RunService:BindToRenderStep("Fly",0,function()
+		if not flying then return end
+		local dir = hum.MoveDirection
+		bv.Velocity = dir *
