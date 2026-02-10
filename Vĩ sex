@@ -1,6 +1,7 @@
---// =================================
--- 🔥 LÒ XO HUB FULL MENU FINAL
--- =================================
+--// =========================================
+-- 🔥 LÒ XO HUB FINAL ALL IN ONE
+-- MENU TOGGLE + PLAYER TAB + 4 TOOL + SPEED BUFF
+-- =========================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -11,27 +12,36 @@ local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.ResetOnSpawn = false
 
 -------------------------------------------------
--- TEXT FLASH
+-- SPEED SYSTEM
 -------------------------------------------------
-local function flashText()
+local NORMAL_SPEED = 16
+local BUFF_SPEED = 45
 
+local function setSpeed(v)
+	local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	if hum then hum.WalkSpeed = v end
+end
+
+-------------------------------------------------
+-- FLASH TEXT
+-------------------------------------------------
+local function flash(text,color,time)
 	local t = Instance.new("TextLabel", gui)
 	t.Size = UDim2.new(1,0,1,0)
 	t.BackgroundTransparency = 1
-	t.Text = "chim nhảy"
+	t.Text = text or "chim nhảy"
 	t.TextScaled = true
 	t.Font = Enum.Font.Arcade
-	t.TextColor3 = Color3.fromRGB(0,255,150)
+	t.TextColor3 = color or Color3.new(1,1,1)
 
-	task.wait(0.1)
+	task.wait(time or 0.12)
 	t:Destroy()
 end
 
 -------------------------------------------------
--- 💥 BOOM TO
+-- BOOM EFFECT
 -------------------------------------------------
-local function boom(pos)
-
+local function boom(pos,scale)
 	local p = Instance.new("Part", workspace)
 	p.Anchored = true
 	p.CanCollide = false
@@ -39,60 +49,49 @@ local function boom(pos)
 	p.Material = Enum.Material.Neon
 	p.Color = Color3.fromRGB(255,200,0)
 	p.Position = pos
-	p.Size = Vector3.new(2,2,2)
+	p.Size = Vector3.new(3,3,3)
 
-	for i=1,12 do
-		p.Size += Vector3.new(7,7,7)
+	for i=1,scale do
+		p.Size += Vector3.new(8,8,8)
 		p.Transparency += 0.07
-		task.wait(0.03)
+		task.wait(0.02)
 	end
 
 	p:Destroy()
 end
 
 -------------------------------------------------
--- TOOL CHIM NHẢY
+-- TOOL TEMPLATE (BUFF SPEED)
+-------------------------------------------------
+local function addSpeed(tool)
+	tool.Equipped:Connect(function() setSpeed(BUFF_SPEED) end)
+	tool.Unequipped:Connect(function() setSpeed(NORMAL_SPEED) end)
+end
+
+-------------------------------------------------
+-- 🟡 CHIM NHẢY
 -------------------------------------------------
 local function giveChim()
-
 	local tool = Instance.new("Tool")
 	tool.Name = "chim nhảy"
 
-	local handle = Instance.new("Part", tool)
-	handle.Name = "Handle"
-	handle.Size = Vector3.new(1,1,1)
-	handle.Material = Enum.Material.Neon
-	handle.Color = Color3.fromRGB(255,255,0)
+	local h = Instance.new("Part", tool)
+	h.Name = "Handle"
+	h.Material = Enum.Material.Neon
+	h.Color = Color3.fromRGB(255,255,0)
 
-	local lastAir = false
-
-	tool.Equipped:Connect(function()
-		local h = player.Character:FindFirstChildOfClass("Humanoid")
-		if h then h.WalkSpeed = 45 end
-	end)
-
-	tool.Unequipped:Connect(function()
-		local h = player.Character:FindFirstChildOfClass("Humanoid")
-		if h then h.WalkSpeed = 16 end
-	end)
+	addSpeed(tool)
 
 	tool.Activated:Connect(function()
 		player.Character.HumanoidRootPart.Velocity = Vector3.new(0,140,0)
-		flashText()
+		flash("chim nhảy",Color3.fromRGB(0,255,0))
 	end)
 
 	RunService.Heartbeat:Connect(function()
-
-		if tool.Parent ~= player.Character then return end
-
-		local hum = player.Character:FindFirstChildOfClass("Humanoid")
-
-		if hum.FloorMaterial == Enum.Material.Air then
-			lastAir = true
-		else
-			if lastAir then
-				lastAir = false
-				boom(player.Character.HumanoidRootPart.Position)
+		if tool.Parent == player.Character then
+			local hum = player.Character:FindFirstChildOfClass("Humanoid")
+			if hum and hum.FloorMaterial ~= Enum.Material.Air then
+				boom(player.Character.HumanoidRootPart.Position,10)
 			end
 		end
 	end)
@@ -101,22 +100,68 @@ local function giveChim()
 end
 
 -------------------------------------------------
--- TOOL DASH
+-- 🔵 DASH
 -------------------------------------------------
 local function giveDash()
-
 	local tool = Instance.new("Tool")
-	tool.Name = "dash"
+	tool.Name = "Dash"
 
-	local handle = Instance.new("Part", tool)
-	handle.Name = "Handle"
-	handle.Size = Vector3.new(1,1,1)
-	handle.Material = Enum.Material.Neon
-	handle.Color = Color3.fromRGB(0,170,255)
+	local h = Instance.new("Part", tool)
+	h.Name = "Handle"
+	h.Material = Enum.Material.Neon
+	h.Color = Color3.fromRGB(0,170,255)
+
+	addSpeed(tool)
 
 	tool.Activated:Connect(function()
 		local root = player.Character.HumanoidRootPart
-		root.Velocity = root.CFrame.LookVector * 220
+		root.Velocity = root.CFrame.LookVector * 240
+		boom(root.Position,6)
+	end)
+
+	tool.Parent = player.Backpack
+end
+
+-------------------------------------------------
+-- 💣 MEGA BOOM
+-------------------------------------------------
+local function giveMega()
+	local tool = Instance.new("Tool")
+	tool.Name = "💣 Mega Boom"
+
+	local h = Instance.new("Part", tool)
+	h.Name = "Handle"
+	h.Material = Enum.Material.Neon
+	h.Color = Color3.fromRGB(255,0,0)
+
+	addSpeed(tool)
+
+	tool.Activated:Connect(function()
+		flash("CHIM NHẢY",Color3.fromRGB(255,255,0),0.2)
+		boom(player.Character.HumanoidRootPart.Position,18)
+	end)
+
+	tool.Parent = player.Backpack
+end
+
+-------------------------------------------------
+-- ⚡ JERK TOOL
+-------------------------------------------------
+local function giveJerk()
+	local tool = Instance.new("Tool")
+	tool.Name = "⚡ Jerk"
+
+	local h = Instance.new("Part", tool)
+	h.Name = "Handle"
+	h.Material = Enum.Material.Neon
+	h.Color = Color3.fromRGB(0,255,255)
+
+	addSpeed(tool)
+
+	tool.Activated:Connect(function()
+		local root = player.Character.HumanoidRootPart
+		root.Velocity = root.CFrame.LookVector * 320
+		boom(root.Position,8)
 	end)
 
 	tool.Parent = player.Backpack
@@ -126,65 +171,84 @@ end
 -- GUI MENU
 -------------------------------------------------
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.fromOffset(260,180)
-main.Position = UDim2.new(0.5,-130,0.6,0)
+main.Size = UDim2.fromOffset(320,260)
+main.Position = UDim2.new(0.5,-160,0.55,0)
 main.BackgroundColor3 = Color3.fromRGB(35,35,35)
 main.Active = true
 main.Draggable = true
 
 local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1,0,0,35)
+title.Size = UDim2.new(1,0,0,40)
 title.Text = "LÒ XO HUB"
-title.BackgroundColor3 = Color3.fromRGB(0,170,255)
-title.TextColor3 = Color3.new(1,1,1)
-title.TextScaled = true
 title.Font = Enum.Font.Arcade
+title.TextScaled = true
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundColor3 = Color3.fromRGB(0,170,255)
 
 -------------------------------------------------
--- TAB 1
+-- TOGGLE BUTTON
 -------------------------------------------------
-local tab1 = Instance.new("TextButton", main)
-tab1.Size = UDim2.fromOffset(110,35)
-tab1.Position = UDim2.new(0,10,0,50)
-tab1.Text = "Chiêu lò xo"
-tab1.Font = Enum.Font.Arcade
-tab1.TextScaled = true
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.fromOffset(70,30)
+toggle.Position = UDim2.new(0,10,0.5,0)
+toggle.Text = "MENU"
+toggle.BackgroundColor3 = Color3.fromRGB(0,170,255)
+toggle.TextColor3 = Color3.new(1,1,1)
+toggle.Font = Enum.Font.Arcade
+toggle.TextScaled = true
+toggle.Active = true
+toggle.Draggable = true
 
-tab1.MouseButton1Click:Connect(function()
-	giveChim()
-	giveDash()
+local open = true
+toggle.MouseButton1Click:Connect(function()
+	open = not open
+	main.Visible = open
+	toggle.Text = open and "MENU" or "OPEN"
 end)
 
 -------------------------------------------------
--- TAB 2 (100 LẦN)
+-- TAB TOOLS
 -------------------------------------------------
-local tab2 = Instance.new("TextButton", main)
-tab2.Size = UDim2.fromOffset(110,35)
-tab2.Position = UDim2.new(0,10,0,100)
-tab2.Text = "Hiệu ứng"
-tab2.Font = Enum.Font.Arcade
-tab2.TextScaled = true
+local btnTools = Instance.new("TextButton", main)
+btnTools.Size = UDim2.fromOffset(140,35)
+btnTools.Position = UDim2.new(0,10,0,60)
+btnTools.Text = "Nhận Tools"
 
-local running = false
+btnTools.MouseButton1Click:Connect(function()
+	giveChim()
+	giveDash()
+	giveMega()
+	giveJerk()
+end)
 
-tab2.MouseButton1Click:Connect(function()
+-------------------------------------------------
+-- TAB PLAYER
+-------------------------------------------------
+local function getHum()
+	return player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+end
 
-	if running then return end
-	running = true
+local spPlus = Instance.new("TextButton", main)
+spPlus.Size = UDim2.fromOffset(140,30)
+spPlus.Position = UDim2.new(0,10,0,110)
+spPlus.Text = "Speed +10"
 
-	task.spawn(function()
+spPlus.MouseButton1Click:Connect(function()
+	local h = getHum()
+	if h then h.WalkSpeed += 10 end
+end)
 
-		for i = 1,100 do
-			flashText()
-			task.wait(0.05)
-		end
+local jpPlus = Instance.new("TextButton", main)
+jpPlus.Size = UDim2.fromOffset(140,30)
+jpPlus.Position = UDim2.new(0,10,0,150)
+jpPlus.Text = "Jump +20"
 
-		running = false
-	end)
-
+jpPlus.MouseButton1Click:Connect(function()
+	local h = getHum()
+	if h then h.JumpPower += 20 end
 end)
 
 -------------------------------------------------
 -- INTRO
 -------------------------------------------------
-flashText()
+flash("chim nhảy",Color3.fromRGB(0,255,150),0.2)
