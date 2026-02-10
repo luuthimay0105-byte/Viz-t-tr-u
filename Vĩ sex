@@ -1,103 +1,80 @@
 --// =========================
--- VĨ HUB FINAL MOBILE FIX
+-- 🔥 VĨ HUB FINAL REAL WORK 🔥
 -- =========================
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Lighting = game:GetService("Lighting")
-
 local player = Players.LocalPlayer
+local Lighting = game:GetService("Lighting")
 
 -------------------------------------------------
 -- GUI
 -------------------------------------------------
-local gui = Instance.new("ScreenGui")
+local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "ViHub"
-gui.Parent = game.CoreGui
 
 -------------------------------------------------
--- 🔳 NÚT MENU (VUÔNG NHỎ)
+-- MENU BUTTON
 -------------------------------------------------
-local menuBtn = Instance.new("TextButton")
-menuBtn.Parent = gui
-menuBtn.Size = UDim2.fromOffset(55,55)
-menuBtn.Position = UDim2.new(0,20,0.6,0)
-menuBtn.Text = "VĨ"
-menuBtn.TextScaled = true
-menuBtn.BackgroundColor3 = Color3.fromRGB(255,60,60)
-menuBtn.TextColor3 = Color3.new(1,1,1)
-menuBtn.BorderSizePixel = 0
+local menu = Instance.new("TextButton", gui)
+menu.Size = UDim2.fromOffset(55,55)
+menu.Position = UDim2.new(0,20,0.6,0)
+menu.Text = "VĨ"
+menu.BackgroundColor3 = Color3.fromRGB(255,70,70)
+menu.TextScaled = true
 
 -------------------------------------------------
--- FRAME MENU
+-- FRAME
 -------------------------------------------------
-local frame = Instance.new("Frame")
-frame.Parent = gui
-frame.Size = UDim2.fromOffset(220,300)
-frame.Position = UDim2.new(0,90,0.45,0)
-frame.Visible = false
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.fromOffset(220,320)
+frame.Position = UDim2.new(0,90,0.4,0)
 frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-frame.BorderSizePixel = 0
+frame.Visible = false
 
--------------------------------------------------
--- LAYOUT
--------------------------------------------------
 local layout = Instance.new("UIListLayout", frame)
 layout.Padding = UDim.new(0,5)
 
 -------------------------------------------------
--- TẠO NÚT
+-- BUTTON MAKER
 -------------------------------------------------
-local function makeBtn(text)
-	local b = Instance.new("TextButton")
-	b.Parent = frame
+local function btn(text)
+	local b = Instance.new("TextButton", frame)
 	b.Size = UDim2.new(1,0,0,38)
 	b.Text = text
-	b.TextScaled = true
 	b.BackgroundColor3 = Color3.fromRGB(70,70,70)
-	b.TextColor3 = Color3.new(1,1,1)
+	b.TextScaled = true
 	return b
 end
 
-local flyBtn = makeBtn("Fly")
-local speedBtn = makeBtn("Speed")
-local noclipBtn = makeBtn("NoClip")
-local lagBtn = makeBtn("Fix Lag")
-local closeBtn = makeBtn("Close")
+local flyBtn = btn("Fly")
+local speedBtn = btn("Speed")
+local noclipBtn = btn("NoClip")
+local farmBtn = btn("Auto Farm")
+local lagBtn = btn("Fix Lag")
+local closeBtn = btn("Close")
 
 -------------------------------------------------
--- BẬT/TẮT MENU (100% hoạt động)
+-- TOGGLE MENU
 -------------------------------------------------
-menuBtn.MouseButton1Click:Connect(function()
+menu.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
 end)
 
 -------------------------------------------------
--- FLY
+-- FLY (SIÊU ỔN ĐỊNH)
 -------------------------------------------------
 local flying=false
-local bv
 
 flyBtn.MouseButton1Click:Connect(function()
-	local char = player.Character
-	if not char then return end
-
-	local hum = char:FindFirstChild("Humanoid")
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-
-	if not flying then
-		bv = Instance.new("BodyVelocity", hrp)
-		bv.MaxForce = Vector3.new(1e9,1e9,1e9)
-
-		RunService:BindToRenderStep("Fly",0,function()
-			bv.Velocity = hum.MoveDirection * 80
-		end)
-	else
-		RunService:UnbindFromRenderStep("Fly")
-		bv:Destroy()
-	end
-
 	flying = not flying
+
+	while flying and player.Character do
+		local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			hrp.Velocity = workspace.CurrentCamera.CFrame.LookVector * 80
+		end
+		task.wait()
+	end
 end)
 
 -------------------------------------------------
@@ -107,16 +84,20 @@ local speed=false
 speedBtn.MouseButton1Click:Connect(function()
 	local hum = player.Character:FindFirstChild("Humanoid")
 	speed = not speed
-	hum.WalkSpeed = speed and 40 or 16
+	hum.WalkSpeed = speed and 45 or 16
 end)
 
 -------------------------------------------------
 -- NOCLIP
 -------------------------------------------------
 local noclip=false
-RunService.Stepped:Connect(function()
+noclipBtn.MouseButton1Click:Connect(function()
+	noclip = not noclip
+end)
+
+game:GetService("RunService").Stepped:Connect(function()
 	if noclip and player.Character then
-		for _,v in pairs(player.Character:GetChildren()) do
+		for _,v in pairs(player.Character:GetDescendants()) do
 			if v:IsA("BasePart") then
 				v.CanCollide=false
 			end
@@ -124,8 +105,38 @@ RunService.Stepped:Connect(function()
 	end
 end)
 
-noclipBtn.MouseButton1Click:Connect(function()
-	noclip = not noclip
+-------------------------------------------------
+-- 🚀 AUTO FARM BLOX FRUITS (REAL)
+-------------------------------------------------
+local farming=false
+
+farmBtn.MouseButton1Click:Connect(function()
+	farming = not farming
+
+	while farming do
+		local char = player.Character
+		local hrp = char and char:FindFirstChild("HumanoidRootPart")
+		local tool = char and char:FindFirstChildOfClass("Tool")
+
+		if hrp then
+			for _,mob in pairs(workspace.Enemies:GetChildren()) do
+				if mob:FindFirstChild("HumanoidRootPart")
+				and mob:FindFirstChild("Humanoid")
+				and mob.Humanoid.Health > 0 then
+
+					hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
+
+					if tool then
+						tool:Activate() -- đánh
+					end
+
+					break
+				end
+			end
+		end
+
+		task.wait(0.2)
+	end
 end)
 
 -------------------------------------------------
