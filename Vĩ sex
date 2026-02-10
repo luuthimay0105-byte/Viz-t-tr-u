@@ -1,12 +1,9 @@
 --// =========================================
--- 🔥 VĨ HUB PRO TOGGLE FIX (ON/OFF FULL)
+-- 🔥 VĨ FIX LAG HUB + TEXT + SOUND
+-- SAFE 100% (FPS BOOST ONLY)
 -- =========================================
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
-
-local player = Players.LocalPlayer
 
 -------------------------------------------------
 -- GUI
@@ -14,279 +11,163 @@ local player = Players.LocalPlayer
 local gui = Instance.new("ScreenGui", game.CoreGui)
 
 -------------------------------------------------
--- NOTIFY TEXT
+-- 🔊 SOUND
 -------------------------------------------------
-local function notify(txt,color)
-	local t=Instance.new("TextLabel",gui)
-	t.Size=UDim2.new(1,0,1,0)
-	t.BackgroundTransparency=1
-	t.Font=Enum.Font.Arcade
-	t.TextScaled=true
-	t.Text=txt
-	t.TextColor3=color or Color3.new(1,1,1)
-	t.TextTransparency=1
+local sound = Instance.new("Sound", gui)
+sound.SoundId = "rbxassetid://9118828564" -- click sound
+sound.Volume = 2
 
-	for i=1,0,-0.05 do t.TextTransparency=i task.wait() end
-	task.wait(0.8)
-	for i=0,1,0.05 do t.TextTransparency=i task.wait() end
+local function playSound()
+	sound:Play()
+end
+
+-------------------------------------------------
+-- 🔥 TEXT EFFECT
+-------------------------------------------------
+local function showText(msg,color)
+
+	local t = Instance.new("TextLabel", gui)
+	t.Size = UDim2.new(1,0,1,0)
+	t.BackgroundTransparency = 1
+	t.Text = msg
+	t.Font = Enum.Font.Arcade
+	t.TextScaled = true
+	t.TextColor3 = color or Color3.fromRGB(255,80,80)
+	t.TextTransparency = 1
+
+	for i=1,0,-0.05 do
+		t.TextTransparency = i
+		task.wait()
+	end
+
+	task.wait(1)
+
+	for i=0,1,0.05 do
+		t.TextTransparency = i
+		task.wait()
+	end
+
 	t:Destroy()
 end
 
+-------------------------------------------------
+-- INTRO
+-------------------------------------------------
 task.spawn(function()
-	notify("VĨ ĐỊT TRÂU")
+	showText("VĨ ĐỊT TRÂU", Color3.fromRGB(255,80,80))
 end)
 
 -------------------------------------------------
--- MAIN UI
+-- MENU BUTTON
 -------------------------------------------------
-local menu=Instance.new("TextButton",gui)
-menu.Size=UDim2.fromOffset(55,55)
-menu.Position=UDim2.new(0,20,0.6,0)
-menu.Text="VĨ"
-menu.TextScaled=true
-menu.BackgroundColor3=Color3.fromRGB(35,35,35)
+local menu = Instance.new("TextButton", gui)
+menu.Size = UDim2.fromOffset(60,60)
+menu.Position = UDim2.new(0,20,0.6,0)
+menu.Text = "VĨ"
+menu.Font = Enum.Font.Arcade
+menu.TextScaled = true
+menu.BackgroundColor3 = Color3.fromRGB(30,30,30)
 
-local frame=Instance.new("Frame",gui)
--------------------------------------------------
--- 🔥 ESP TAB
--------------------------------------------------
-
-local espFrame = Instance.new("Frame", gui)
-espFrame.Size = frame.Size
-espFrame.Position = frame.Position
-espFrame.Visible = false
-espFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-
-local espLayout = Instance.new("UIListLayout", espFrame)
-espLayout.Padding = UDim.new(0,5)
-
--------------------------------------------------
--- TAB BUTTON
--------------------------------------------------
-
-make("ESP TAB", function()
-	frame.Visible = false
-	espFrame.Visible = true
-end)
-
-local function makeESP(name,callback)
-	local b=Instance.new("TextButton",espFrame)
-	b.Size=UDim2.new(1,0,0,36)
-	b.Text=name
-	b.TextScaled=true
-	b.BackgroundColor3=Color3.fromRGB(55,55,55)
-	b.MouseButton1Click:Connect(callback)
-end
-
-makeESP("<< Back", function()
-	espFrame.Visible=false
-	frame.Visible=true
-end)-------------------------------------------------
--- 🔥 GLOW ME
--------------------------------------------------
-local glow=false
-local myHighlight
-
-makeESP("Glow Me",function()
-
-	glow=not glow
-
-	if glow then
-		myHighlight=Instance.new("Highlight",player.Character)
-		myHighlight.FillTransparency=0.3
-
-		task.spawn(function()
-			local h=0
-			while glow and myHighlight do
-				h+=0.01
-				myHighlight.FillColor=Color3.fromHSV(h%1,1,1)
-				task.wait()
-			end
-		end)
-
-		notify("Glow ON")
-	else
-		if myHighlight then myHighlight:Destroy() end
-		notify("Glow OFF")
-	end
-end)
-
--------------------------------------------------
--- 🔥 PLAYER ESP
--------------------------------------------------
-local playerESP=false
-local playerHL={}
-
-makeESP("Player ESP",function()
-
-	playerESP=not playerESP
-
-	if playerESP then
-		for _,plr in pairs(game.Players:GetPlayers()) do
-			if plr~=player and plr.Character then
-				local h=Instance.new("Highlight",plr.Character)
-				h.FillColor=Color3.fromRGB(255,0,0)
-				playerHL[plr]=h
-			end
-		end
-		notify("Player ESP ON")
-	else
-		for _,h in pairs(playerHL) do h:Destroy() end
-		playerHL={}
-		notify("Player ESP OFF")
-	end
-end)
-
--------------------------------------------------
--- 🔥 FRUIT ESP
--------------------------------------------------
-local fruitESP=false
-local fruitHL={}
-
-makeESP("Fruit ESP",function()
-
-	fruitESP=not fruitESP
-
-	if fruitESP then
-		for _,v in pairs(workspace:GetDescendants()) do
-			if string.find(v.Name,"Fruit") and v:IsA("Model") then
-				local h=Instance.new("Highlight",v)
-				h.FillColor=Color3.fromRGB(0,255,0)
-				table.insert(fruitHL,h)
-			end
-		end
-		notify("Fruit ESP ON")
-	else
-		for _,h in pairs(fruitHL) do h:Destroy() end
-		fruitHL={}
-		notify("Fruit ESP OFF")
-	end
-end)
-
--------------------------------------------------
--- 🔥 CHEST ESP
--------------------------------------------------
-local chestESP=false
-local chestHL={}
-
-makeESP("Chest ESP",function()
-
-	chestESP=not chestESP
-
-	if chestESP then
-		for _,v in pairs(workspace:GetDescendants()) do
-			if string.find(v.Name,"Chest") then
-				local h=Instance.new("Highlight",v)
-				h.FillColor
-frame.Size=UDim2.fromOffset(260,350)
-frame.Position=UDim2.new(0,90,0.3,0)
-frame.Visible=false
-frame.BackgroundColor3=Color3.fromRGB(30,30,30)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.fromOffset(230,230)
+frame.Position = UDim2.new(0,90,0.35,0)
+frame.Visible = false
+frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 
 menu.MouseButton1Click:Connect(function()
-	frame.Visible=not frame.Visible
+	playSound()
+	frame.Visible = not frame.Visible
 end)
 
-local layout=Instance.new("UIListLayout",frame)
-layout.Padding=UDim.new(0,5)
+-------------------------------------------------
+-- LAYOUT
+-------------------------------------------------
+local layout = Instance.new("UIListLayout", frame)
+layout.Padding = UDim.new(0,6)
 
 -------------------------------------------------
 -- BUTTON MAKER
 -------------------------------------------------
-local function make(name,callback)
-	local b=Instance.new("TextButton",frame)
-	b.Size=UDim2.new(1,0,0,36)
-	b.Text=name
-	b.TextScaled=true
-	b.BackgroundColor3=Color3.fromRGB(55,55,55)
+local function make(name, func)
 
-	b.MouseButton1Click:Connect(callback)
-	return b
+	local b = Instance.new("TextButton", frame)
+	b.Size = UDim2.new(1,0,0,38)
+	b.Text = name
+	b.Font = Enum.Font.Arcade
+	b.TextScaled = true
+	b.BackgroundColor3 = Color3.fromRGB(55,55,55)
+
+	b.MouseButton1Click:Connect(function()
+
+		playSound()
+		showText("VĨ CẮN NÉN", Color3.fromRGB(0,255,150))
+
+		func()
+	end)
 end
 
 -------------------------------------------------
--- SPEED TOGGLE
--------------------------------------------------
-local speed=false
-make("Speed",function()
-	speed=not speed
-	player.Character.Humanoid.WalkSpeed=speed and 40 or 16
-	notify("Speed "..(speed and "ON" or "OFF"))
-end)
-
--------------------------------------------------
--- FLY TOGGLE
--------------------------------------------------
-local flying=false
-local bv
-
-make("Fly",function()
-	local hrp=player.Character.HumanoidRootPart
-	local hum=player.Character.Humanoid
-
-	flying=not flying
-
-	if flying then
-		bv=Instance.new("BodyVelocity",hrp)
-		bv.MaxForce=Vector3.new(1e9,1e9,1e9)
-
-		RunService:BindToRenderStep("Fly",0,function()
-			bv.Velocity=hum.MoveDirection*80
-		end)
-	else
-		RunService:UnbindFromRenderStep("Fly")
-		if bv then bv:Destroy() end
-	end
-
-	notify("Fly "..(flying and "ON" or "OFF"))
-end)
-
--------------------------------------------------
--- GATHER TOGGLE
--------------------------------------------------
-local gather=false
-
-make("Gather Mob",function()
-	gather=not gather
-	notify("Gather "..(gather and "ON" or "OFF"))
-end)
-
-RunService.RenderStepped:Connect(function()
-	if gather then
-		local hrp=player.Character.HumanoidRootPart
-		for _,v in pairs(workspace.Enemies:GetChildren()) do
-			if v:FindFirstChild("HumanoidRootPart") then
-				v.HumanoidRootPart.CFrame=hrp.CFrame*CFrame.new(0,0,-5)
-			end
-		end
-	end
-end)
-
--------------------------------------------------
--- FIX LAG TOGGLE
+-- ⚡ FIX LAG
 -------------------------------------------------
 local lag=false
 
-make("Fix Lag",function()
-	lag=not lag
+local function optimize()
 
-	if lag then
-		Lighting.GlobalShadows=false
-		for _,v in pairs(workspace:GetDescendants()) do
-			if v:IsA("BasePart") then
-				v.Material=Enum.Material.SmoothPlastic
-			end
+	Lighting.GlobalShadows=false
+	Lighting.FogEnd=9e9
+
+	for _,v in pairs(Lighting:GetChildren()) do
+		if v:IsA("PostEffect") then
+			v.Enabled=false
 		end
-	else
-		Lighting.GlobalShadows=true
 	end
 
-	notify("Fix Lag "..(lag and "ON" or "OFF"))
+	for _,v in pairs(workspace:GetDescendants()) do
+
+		if v:IsA("ParticleEmitter")
+		or v:IsA("Trail")
+		or v:IsA("Smoke")
+		or v:IsA("Fire")
+		or v:IsA("Sparkles") then
+			v.Enabled=false
+		end
+
+		if v:IsA("BasePart") then
+			v.Material=Enum.Material.SmoothPlastic
+			v.Reflectance=0
+		end
+
+		if v:IsA("Decal") or v:IsA("Texture") then
+			v:Destroy()
+		end
+	end
+end
+
+make("⚡ Fix Lag", function()
+	lag = not lag
+
+	if lag then
+		optimize()
+		showText("VĨ ĐỊT TRÂU ON", Color3.fromRGB(0,255,0))
+	else
+		Lighting.GlobalShadows=true
+		showText("VĨ ĐỊT TRÂU OFF", Color3.fromRGB(255,0,0))
+	end
 end)
 
 -------------------------------------------------
--- CLOSE
+-- 💡 FULLBRIGHT
 -------------------------------------------------
-make("Close",function()
+local bright=false
+
+make("💡 FullBright", function()
+	bright = not bright
+	Lighting.Brightness = bright and 3 or 1
+end)
+
+-------------------------------------------------
+-- ❌ CLOSE
+-------------------------------------------------
+make("Close", function()
 	frame.Visible=false
 end)
