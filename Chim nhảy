@@ -1,42 +1,36 @@
---// =========================================
---        LÒ XO HUB PRO MAX (FULL FIX)
---        MENU + TẤT CẢ CHỨC NĂNG
--- =========================================
+--// =================================
+--   AIMBOTDK HUB (SAFE VERSION)
+--   Dev: ngdkhanh
+-- =================================
 
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
 
 -------------------------------------------------
--- GUI SAFE
+-- GUI
 -------------------------------------------------
 
 local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "LoXoHub"
 gui.ResetOnSpawn = false
 
--------------------------------------------------
--- OPEN BUTTON
--------------------------------------------------
-
+-- nút mở
 local open = Instance.new("TextButton", gui)
 open.Size = UDim2.fromOffset(70,70)
-open.Position = UDim2.new(0,15,0.6,0)
-open.Text = "MENU"
-open.TextScaled = true
+open.Position = UDim2.new(0,20,0.6,0)
+open.Text = "DK"
 open.BackgroundColor3 = Color3.fromRGB(0,170,255)
-Instance.new("UICorner", open).CornerRadius = UDim.new(0,12)
+open.TextScaled = true
+Instance.new("UICorner", open)
 
--------------------------------------------------
--- MAIN
--------------------------------------------------
-
+-- main
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.fromOffset(540,360)
-main.Position = UDim2.new(0.5,-270,0.5,-180)
-main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.Size = UDim2.fromOffset(500,320)
+main.Position = UDim2.new(0.5,-250,0.5,-160)
 main.Visible = false
+main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Instance.new("UICorner", main)
 
 open.MouseButton1Click:Connect(function()
@@ -47,12 +41,13 @@ end)
 -- DRAG
 -------------------------------------------------
 
-local dragging, dragStart, startPos
+local dragging, startPos, dragStart
+
 main.InputBegan:Connect(function(i)
 	if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
 		dragging = true
-		dragStart = i.Position
 		startPos = main.Position
+		dragStart = i.Position
 	end
 end)
 
@@ -68,169 +63,146 @@ UIS.InputEnded:Connect(function()
 end)
 
 -------------------------------------------------
--- TAB HOLDER
+-- TITLE
 -------------------------------------------------
 
-local holder = Instance.new("Frame", main)
-holder.Size = UDim2.new(1,0,1,-40)
-holder.Position = UDim2.new(0,0,0,40)
-holder.BackgroundTransparency = 1
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "Dev: ngdkhanh"
+title.TextScaled = true
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(0,255,170)
 
 -------------------------------------------------
--- FUNCTION CREATE BUTTON
+-- TAB SYSTEM
 -------------------------------------------------
 
-local function newBtn(text,pos,callback)
-	local b = Instance.new("TextButton", holder)
-	b.Size = UDim2.fromOffset(220,40)
-	b.Position = pos
-	b.Text = text
-	b.TextScaled = true
-	b.BackgroundColor3 = Color3.fromRGB(0,170,255)
-	Instance.new("UICorner", b)
-	b.MouseButton1Click:Connect(callback)
-	return b
+local function makePage()
+	local f = Instance.new("Frame", main)
+	f.Size = UDim2.new(1,0,1,-80)
+	f.Position = UDim2.new(0,0,0,80)
+	f.BackgroundTransparency = 1
+	return f
+end
+
+local aimPage = makePage()
+local espPage = makePage()
+local playerPage = makePage()
+local visualPage = makePage()
+
+espPage.Visible=false
+playerPage.Visible=false
+visualPage.Visible=false
+
+local function show(p)
+	aimPage.Visible=false
+	espPage.Visible=false
+	playerPage.Visible=false
+	visualPage.Visible=false
+	p.Visible=true
+end
+
+local function tab(name,x,page)
+	local b=Instance.new("TextButton",main)
+	b.Size=UDim2.fromOffset(110,30)
+	b.Position=UDim2.new(0,x,0,45)
+	b.Text=name
+	b.MouseButton1Click:Connect(function() show(page) end)
+end
+
+tab("AIM",10,aimPage)
+tab("ESP",130,espPage)
+tab("PLAYER",250,playerPage)
+tab("VISUAL",370,visualPage)
+
+-------------------------------------------------
+-- BUTTON HELPER
+-------------------------------------------------
+
+local function btn(parent,text,y,func)
+	local b=Instance.new("TextButton",parent)
+	b.Size=UDim2.fromOffset(200,35)
+	b.Position=UDim2.new(0,20,0,y)
+	b.Text=text
+	b.MouseButton1Click:Connect(func)
 end
 
 -------------------------------------------------
--- FLY
+-- AIM ASSIST
 -------------------------------------------------
 
-local fly=false
-local speed=50
-local bv,bg
+local aim=false
 
-local function startFly()
-	local char = player.Character
-	local root = char:WaitForChild("HumanoidRootPart")
-
-	bv = Instance.new("BodyVelocity", root)
-	bg = Instance.new("BodyGyro", root)
-	bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
-
-	RunService.RenderStepped:Connect(function()
-		if not fly then return end
-
-		local cam = workspace.CurrentCamera
-		bg.CFrame = cam.CFrame
-
-		local move = Vector3.zero
-		if UIS:IsKeyDown(Enum.KeyCode.W) then move += cam.CFrame.LookVector end
-		if UIS:IsKeyDown(Enum.KeyCode.S) then move -= cam.CFrame.LookVector end
-
-		bv.Velocity = move * speed
-	end)
-end
-
-newBtn("🚀 Fly ON/OFF",UDim2.new(0,20,0,10),function()
-	fly = not fly
-	if fly then
-		startFly()
-	else
-		if bv then bv:Destroy() end
-		if bg then bg:Destroy() end
-	end
+btn(aimPage,"Aim Assist ON/OFF",10,function()
+	aim = not aim
 end)
 
-newBtn("➕ Speed +",UDim2.new(0,260,0,10),function()
-	speed += 10
-end)
+RunService.RenderStepped:Connect(function()
+	if not aim then return end
 
-newBtn("➖ Speed -",UDim2.new(0,260,0,60),function()
-	speed = math.max(10,speed-10)
-end)
+	local cam = workspace.CurrentCamera
+	local closest, dist = nil, math.huge
 
--------------------------------------------------
--- PLAYER SPEED/JUMP
--------------------------------------------------
-
-newBtn("⚡ Speed 80",UDim2.new(0,20,0,60),function()
-	player.Character.Humanoid.WalkSpeed = 80
-end)
-
-newBtn("🦘 Jump 120",UDim2.new(0,20,0,110),function()
-	player.Character.Humanoid.JumpPower = 120
-end)
-
--------------------------------------------------
--- RAINBOW AURA
--------------------------------------------------
-
-local aura=false
-
-newBtn("🌈 Rainbow Aura",UDim2.new(0,260,0,110),function()
-	aura = not aura
-	RunService.RenderStepped:Connect(function()
-		if aura and player.Character then
-			local c = Color3.fromHSV(tick()%5/5,1,1)
-			for _,v in pairs(player.Character:GetDescendants()) do
-				if v:IsA("BasePart") then
-					v.Color = c
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
+			local pos, onscreen = cam:WorldToViewportPoint(plr.Character.Head.Position)
+			if onscreen then
+				local d = (Vector2.new(pos.X,pos.Y)-Vector2.new(cam.ViewportSize.X/2,cam.ViewportSize.Y/2)).Magnitude
+				if d < dist then
+					dist = d
+					closest = plr.Character.Head
 				end
 			end
 		end
-	end)
+	end
+
+	if closest then
+		cam.CFrame = cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position, closest.Position), 0.08)
+	end
 end)
 
 -------------------------------------------------
 -- ESP
 -------------------------------------------------
 
-local esp=false
-
-newBtn("👁 ESP Player",UDim2.new(0,20,0,160),function()
-	esp = not esp
+btn(espPage,"Highlight Player",10,function()
 	for _,plr in pairs(Players:GetPlayers()) do
 		if plr ~= player and plr.Character then
-			local hl = plr.Character:FindFirstChild("HL") or Instance.new("Highlight",plr.Character)
-			hl.Name="HL"
-			hl.Enabled = esp
+			if not plr.Character:FindFirstChildOfClass("Highlight") then
+				Instance.new("Highlight", plr.Character)
+			end
 		end
 	end
 end)
 
 -------------------------------------------------
--- BOOM TOOL
+-- PLAYER
 -------------------------------------------------
 
-newBtn("💣 Boom Tool",UDim2.new(0,260,0,160),function()
+btn(playerPage,"Speed 80",10,function()
+	player.Character.Humanoid.WalkSpeed = 80
+end)
 
-	local tool = Instance.new("Tool")
-	tool.RequiresHandle=false
-	tool.Name="Boom"
-
-	tool.Activated:Connect(function()
-		local ex = Instance.new("Explosion",workspace)
-		ex.Position = player.Character.HumanoidRootPart.Position
-		ex.BlastRadius = 40
-	end)
-
-	tool.Parent = player.Backpack
+btn(playerPage,"Jump 120",55,function()
+	player.Character.Humanoid.JumpPower = 120
 end)
 
 -------------------------------------------------
--- DASH TOOL
+-- VISUAL
 -------------------------------------------------
 
-newBtn("💥 Dash Tool",UDim2.new(0,20,0,210),function()
-
-	local tool = Instance.new("Tool")
-	tool.RequiresHandle=false
-	tool.Name="Dash"
-
-	tool.Activated:Connect(function()
-		local hrp = player.Character.HumanoidRootPart
-		hrp.Velocity = hrp.CFrame.LookVector * 200
+btn(visualPage,"Rainbow Self",10,function()
+	RunService.RenderStepped:Connect(function()
+		local c = Color3.fromHSV(tick()%5/5,1,1)
+		for _,v in pairs(player.Character:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.Color = c
+			end
+		end
 	end)
-
-	tool.Parent = player.Backpack
 end)
 
--------------------------------------------------
--- FIX LAG
--------------------------------------------------
-
-newBtn("🧹 Fix Lag",UDim2.new(0,260,0,210),function()
+btn(visualPage,"Fix Lag",55,function()
 	for _,v in pairs(workspace:GetDescendants()) do
 		if v:IsA("ParticleEmitter") or v:IsA("Trail") then
 			v.Enabled=false
