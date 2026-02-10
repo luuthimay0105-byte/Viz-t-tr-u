@@ -1,0 +1,271 @@
+--// =========================================
+-- 🔥 LÒ XO HUB PRO MAX FINAL
+-- Tools PRO | Fly PRO | Aura PRO | Drag | Tabs
+-- Mobile + PC Smooth 100%
+-- =========================================
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-------------------------------------------------
+-- GUI
+-------------------------------------------------
+
+local gui = Instance.new("ScreenGui", game.CoreGui)
+
+local open = Instance.new("TextButton", gui)
+open.Size = UDim2.fromOffset(65,65)
+open.Position = UDim2.new(0,20,0.5,-30)
+open.Text = "MENU"
+open.BackgroundColor3 = Color3.fromRGB(0,170,255)
+open.TextScaled = true
+Instance.new("UICorner", open)
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.fromOffset(520,320)
+main.Position = UDim2.new(0.5,-260,0.5,-160)
+main.BackgroundColor3 = Color3.fromRGB(30,30,30)
+main.Visible = false
+Instance.new("UICorner", main)
+
+open.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+end)
+
+-------------------------------------------------
+-- DRAG MENU
+-------------------------------------------------
+
+local dragging, start, pos
+
+main.InputBegan:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton1 then
+		dragging=true
+		start=i.Position
+		pos=main.Position
+	end
+end)
+
+UIS.InputChanged:Connect(function(i)
+	if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
+		local d=i.Position-start
+		main.Position=UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
+	end
+end)
+
+UIS.InputEnded:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton1 then
+		dragging=false
+	end
+end)
+
+-------------------------------------------------
+-- TITLE
+-------------------------------------------------
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "🔥 LÒ XO HUB PRO MAX"
+title.TextScaled = true
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(0,255,170)
+
+-------------------------------------------------
+-- TAB SYSTEM
+-------------------------------------------------
+
+local function makeTab(name,x)
+	local b=Instance.new("TextButton",main)
+	b.Size=UDim2.fromOffset(110,30)
+	b.Position=UDim2.new(0,x,0,40)
+	b.Text=name
+	return b
+end
+
+local toolsBtn = makeTab("TOOLS",10)
+local flyBtn   = makeTab("FLY",130)
+local auraBtn  = makeTab("AURA",250)
+
+local function makePage()
+	local f=Instance.new("Frame",main)
+	f.Size=UDim2.new(1,0,1,-80)
+	f.Position=UDim2.new(0,0,0,80)
+	f.BackgroundTransparency=1
+	return f
+end
+
+local toolsPage = makePage()
+local flyPage   = makePage()
+local auraPage  = makePage()
+
+flyPage.Visible=false
+auraPage.Visible=false
+
+local function show(p)
+	toolsPage.Visible=false
+	flyPage.Visible=false
+	auraPage.Visible=false
+	p.Visible=true
+end
+
+toolsBtn.MouseButton1Click:Connect(function() show(toolsPage) end)
+flyBtn.MouseButton1Click:Connect(function() show(flyPage) end)
+auraBtn.MouseButton1Click:Connect(function() show(auraPage) end)
+
+-------------------------------------------------
+-- BUTTON HELPER
+-------------------------------------------------
+
+local function btn(parent,text,y,func)
+	local b=Instance.new("TextButton",parent)
+	b.Size=UDim2.fromOffset(180,30)
+	b.Position=UDim2.new(0,10,0,y)
+	b.Text=text
+	b.MouseButton1Click:Connect(func)
+end
+
+-------------------------------------------------
+-- 🌈 RAINBOW LOOP
+-------------------------------------------------
+
+local function rainbow(obj)
+	task.spawn(function()
+		while obj and obj.Parent do
+			obj.Color = Color3.fromHSV(tick()%5/5,1,1)
+			task.wait()
+		end
+	end)
+end
+
+-------------------------------------------------
+-- 🔥 TOOLS PRO MAX
+-------------------------------------------------
+
+local function giveTool(name,skill)
+	local t=Instance.new("Tool")
+	t.Name=name
+	t.RequiresHandle=false
+	t.Activated:Connect(skill)
+	t.Parent=player.Backpack
+end
+
+btn(toolsPage,"🐦 Chim Nhảy PRO",0,function()
+	giveTool("Chim Nhảy PRO",function()
+		player.Character.HumanoidRootPart.Velocity=Vector3.new(0,260,0)
+	end)
+end)
+
+btn(toolsPage,"💨 Dash PRO",40,function()
+	giveTool("Dash PRO",function()
+		local hrp=player.Character.HumanoidRootPart
+		hrp.Velocity=workspace.CurrentCamera.CFrame.LookVector*300
+	end)
+end)
+
+btn(toolsPage,"💥 Boom PRO MAX",80,function()
+	giveTool("Boom PRO",function()
+		local p=Instance.new("Part",workspace)
+		p.Shape="Ball"
+		p.Anchored=true
+		p.CanCollide=false
+		p.Size=Vector3.new(50,50,50)
+		p.CFrame=player.Character.HumanoidRootPart.CFrame
+		p.Material="Neon"
+		rainbow(p)
+		game.Debris:AddItem(p,0.4)
+	end)
+end)
+
+btn(toolsPage,"⚡ Speed Burst",120,function()
+	giveTool("Speed Burst",function()
+		local h=player.Character:FindFirstChildOfClass("Humanoid")
+		h.WalkSpeed=160
+		task.wait(2)
+		h.WalkSpeed=16
+	end)
+end)
+
+-------------------------------------------------
+-- ✈️ FLY PRO (MƯỢT + 360)
+-------------------------------------------------
+
+local flying=false
+local speed=50
+local bv,bg
+
+local speedLabel = Instance.new("TextLabel", flyPage)
+speedLabel.Size=UDim2.fromOffset(200,30)
+speedLabel.Position=UDim2.new(0,10,0,120)
+speedLabel.BackgroundTransparency=1
+speedLabel.Text="Speed: 50"
+
+local function startFly()
+
+	flying=true
+	local root=player.Character.HumanoidRootPart
+
+	bv=Instance.new("BodyVelocity",root)
+	bg=Instance.new("BodyGyro",root)
+
+	bv.MaxForce=Vector3.new(1e5,1e5,1e5)
+	bg.MaxTorque=Vector3.new(1e5,1e5,1e5)
+
+	RunService:BindToRenderStep("fly",0,function()
+		local cam=workspace.CurrentCamera
+		bg.CFrame=cam.CFrame
+		bv.Velocity=cam.CFrame.LookVector*speed
+	end)
+end
+
+local function stopFly()
+	flying=false
+	RunService:UnbindFromRenderStep("fly")
+	if bv then bv:Destroy() end
+	if bg then bg:Destroy() end
+end
+
+btn(flyPage,"Fly ON/OFF",0,function()
+	if flying then stopFly() else startFly() end
+end)
+
+btn(flyPage,"Speed +",40,function()
+	speed+=10
+	speedLabel.Text="Speed: "..speed
+end)
+
+btn(flyPage,"Speed -",80,function()
+	speed-=10
+	speedLabel.Text="Speed: "..speed
+end)
+
+-------------------------------------------------
+-- 🔮 AURA PRO (RAINBOW CIRCLE)
+-------------------------------------------------
+
+local aura
+
+btn(auraPage,"Aura ON/OFF",0,function()
+
+	if aura then aura:Destroy() aura=nil return end
+
+	aura=Instance.new("Part",workspace)
+	aura.Shape="Cylinder"
+	aura.Size=Vector3.new(10,0.2,10)
+	aura.Anchored=true
+	aura.CanCollide=false
+	aura.Material="Neon"
+
+	rainbow(aura)
+
+	RunService.RenderStepped:Connect(function()
+		if aura and player.Character then
+			aura.CFrame=player.Character.HumanoidRootPart.CFrame*
+				CFrame.new(0,-3,0)*
+				CFrame.Angles(math.rad(90),0,0)
+		end
+	end)
+
+end)
