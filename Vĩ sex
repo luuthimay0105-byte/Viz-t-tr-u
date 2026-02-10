@@ -1,109 +1,153 @@
---// ===== VĨ CẮN NÉN MENU PRO =====
+--// ===== VĨ MENU FINAL FIX =====
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
 
 -------------------------------------------------
--- GUI
+-- GUI (KHÔNG dùng CoreGui nữa)
 -------------------------------------------------
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local gui = Instance.new("ScreenGui")
+gui.Parent = player.PlayerGui
+gui.ResetOnSpawn = false
 gui.Name = "ViMenu"
 
 -------------------------------------------------
--- NÚT MENU ĐẸP
+-- NÚT MENU (luôn hiện)
 -------------------------------------------------
 local menuBtn = Instance.new("TextButton", gui)
 menuBtn.Size = UDim2.fromOffset(90,40)
-menuBtn.Position = UDim2.new(0,20,0.6,0)
+menuBtn.Position = UDim2.fromOffset(20,300)
 menuBtn.Text = "MENU"
 menuBtn.TextScaled = true
 menuBtn.Font = Enum.Font.GothamBold
 menuBtn.TextColor3 = Color3.new(1,1,1)
-menuBtn.BorderSizePixel = 0
-menuBtn.AutoButtonColor = false
-menuBtn.Draggable = true
+menuBtn.BackgroundColor3 = Color3.fromRGB(255,0,80)
+menuBtn.ZIndex = 999
 
-local grad = Instance.new("UIGradient", menuBtn)
-grad.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,120)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(0,170,255))
-}
+-------------------------------------------------
+-- DRAG MOBILE THẬT
+-------------------------------------------------
+local dragging=false
+local startPos,startFrame
+
+menuBtn.InputBegan:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.Touch then
+		dragging=true
+		startPos=i.Position
+		startFrame=menuBtn.Position
+	end
+end)
+
+UIS.InputChanged:Connect(function(i)
+	if dragging and i.UserInputType==Enum.UserInputType.Touch then
+		local d=i.Position-startPos
+		menuBtn.Position=UDim2.fromOffset(
+			startFrame.X.Offset+d.X,
+			startFrame.Y.Offset+d.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function()
+	dragging=false
+end)
 
 -------------------------------------------------
 -- FRAME MENU
 -------------------------------------------------
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.fromOffset(260,170)
-frame.Position = UDim2.new(0.5,-130,0.5,-85)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-frame.Visible = false
+frame.Size = UDim2.fromOffset(240,150)
+frame.Position = UDim2.new(0.5,-120,0.5,-75)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.Visible=false
+frame.ZIndex = 999
 
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
-
--------------------------------------------------
--- TITLE
--------------------------------------------------
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1,0,0,35)
-title.Text = "VĨ CẮN NÉN"
-title.TextColor3 = Color3.new(1,1,1)
-title.BackgroundColor3 = Color3.fromRGB(200,0,0)
-title.TextScaled = true
-title.Font = Enum.Font.GothamBold
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
 
 -------------------------------------------------
--- BUTTON MAKER
+-- BUTTON TẠO
 -------------------------------------------------
 local function makeBtn(text,y)
 	local b = Instance.new("TextButton", frame)
 	b.Size = UDim2.new(0.9,0,0,30)
 	b.Position = UDim2.new(0.05,0,0,y)
 	b.Text = text
-	b.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
 	b.TextColor3 = Color3.new(1,1,1)
-	b.TextScaled = true
-	b.Font = Enum.Font.GothamBold
+	b.TextScaled=true
 	return b
 end
 
-local flyBtn = makeBtn("FLY ON/OFF",45)
-local tpBtn = makeBtn("BAY TỚI PLAYER",80)
-local hideBtn = makeBtn("ẨN MÀN HÌNH",115)
+local flyBtn = makeBtn("FLY",20)
+local tpBtn = makeBtn("TP PLAYER",60)
+local hideBtn = makeBtn("ẨN MÀN HÌNH",100)
 
 -------------------------------------------------
--- HIỆU ỨNG MỞ MENU
+-- MỞ MENU
 -------------------------------------------------
 menuBtn.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
-	frame.BackgroundTransparency = 1
-
-	for i=1,10 do
-		frame.BackgroundTransparency = 1 - i/10
-		task.wait(0.01)
-	end
 end)
 
 -------------------------------------------------
--- FLY SYSTEM (mobile safe)
+-- FLY
 -------------------------------------------------
 local flying=false
-local speed=45
 local bv
 
 local function startFly()
-	local char = player.Character
-	if not char then return end
+	local char=player.Character
+	local hum=char:WaitForChild("Humanoid")
+	local hrp=char:WaitForChild("HumanoidRootPart")
 
-	local hum = char:WaitForChild("Humanoid")
-	local hrp = char:WaitForChild("HumanoidRootPart")
-
-	bv = Instance.new("BodyVelocity", hrp)
-	bv.MaxForce = Vector3.new(1e9,1e9,1e9)
+	bv=Instance.new("BodyVelocity",hrp)
+	bv.MaxForce=Vector3.new(1e9,1e9,1e9)
 
 	flying=true
 
 	RunService:BindToRenderStep("Fly",0,function()
 		if not flying then return end
-		local dir = hum.MoveDirection
-		bv.Velocity = dir *
+		bv.Velocity = hum.MoveDirection*50
+	end)
+end
+
+local function stopFly()
+	flying=false
+	RunService:UnbindFromRenderStep("Fly")
+	if bv then bv:Destroy() end
+end
+
+flyBtn.MouseButton1Click:Connect(function()
+	if flying then stopFly() else startFly() end
+end)
+
+-------------------------------------------------
+-- TP PLAYER (1 lần)
+-------------------------------------------------
+tpBtn.MouseButton1Click:Connect(function()
+	for _,p in pairs(Players:GetPlayers()) do
+		if p~=player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+			player.Character.HumanoidRootPart.CFrame =
+				p.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
+			break
+		end
+	end
+end)
+
+-------------------------------------------------
+-- ẨN HẾT → chữ
+-------------------------------------------------
+hideBtn.MouseButton1Click:Connect(function()
+	gui:ClearAllChildren()
+
+	local t=Instance.new("TextLabel",gui)
+	t.Size=UDim2.new(1,0,1,0)
+	t.BackgroundTransparency=1
+	t.Text="vĩ cắn nén"
+	t.TextScaled=true
+	t.Font=Enum.Font.Arcade
+	t.TextColor3=Color3.fromRGB(255,0,0)
+end)
