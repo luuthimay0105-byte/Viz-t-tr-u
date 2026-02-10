@@ -1,94 +1,71 @@
---// ===== VĨ MENU FINAL FIX =====
+--// ===== VĨ MENU FIX 100% MOBILE =====
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
 -------------------------------------------------
--- GUI (KHÔNG dùng CoreGui nữa)
+-- GUI
 -------------------------------------------------
 local gui = Instance.new("ScreenGui")
 gui.Parent = player.PlayerGui
 gui.ResetOnSpawn = false
-gui.Name = "ViMenu"
+gui.IgnoreGuiInset = true
+gui.DisplayOrder = 999999
 
 -------------------------------------------------
--- NÚT MENU (luôn hiện)
+-- MENU BUTTON (LUÔN BẤM ĐƯỢC)
 -------------------------------------------------
-local menuBtn = Instance.new("TextButton", gui)
-menuBtn.Size = UDim2.fromOffset(90,40)
-menuBtn.Position = UDim2.fromOffset(20,300)
+local menuBtn = Instance.new("TextButton")
+menuBtn.Parent = gui
+menuBtn.Size = UDim2.fromOffset(110,45)
+menuBtn.Position = UDim2.fromOffset(20,350)
 menuBtn.Text = "MENU"
 menuBtn.TextScaled = true
-menuBtn.Font = Enum.Font.GothamBold
+menuBtn.Font = Enum.Font.GothamBlack
 menuBtn.TextColor3 = Color3.new(1,1,1)
-menuBtn.BackgroundColor3 = Color3.fromRGB(255,0,80)
-menuBtn.ZIndex = 999
+menuBtn.BackgroundColor3 = Color3.fromRGB(255,0,120)
+menuBtn.ZIndex = 999999
+menuBtn.AutoButtonColor = false
+
+Instance.new("UICorner", menuBtn).CornerRadius = UDim.new(0,12)
 
 -------------------------------------------------
--- DRAG MOBILE THẬT
+-- FRAME
 -------------------------------------------------
-local dragging=false
-local startPos,startFrame
+local frame = Instance.new("Frame")
+frame.Parent = gui
+frame.Size = UDim2.fromOffset(260,160)
+frame.Position = UDim2.new(0.5,-130,0.5,-80)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.Visible = false
+frame.ZIndex = 999999
 
-menuBtn.InputBegan:Connect(function(i)
-	if i.UserInputType==Enum.UserInputType.Touch then
-		dragging=true
-		startPos=i.Position
-		startFrame=menuBtn.Position
-	end
-end)
-
-UIS.InputChanged:Connect(function(i)
-	if dragging and i.UserInputType==Enum.UserInputType.Touch then
-		local d=i.Position-startPos
-		menuBtn.Position=UDim2.fromOffset(
-			startFrame.X.Offset+d.X,
-			startFrame.Y.Offset+d.Y
-		)
-	end
-end)
-
-UIS.InputEnded:Connect(function()
-	dragging=false
-end)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
 
 -------------------------------------------------
--- FRAME MENU
--------------------------------------------------
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.fromOffset(240,150)
-frame.Position = UDim2.new(0.5,-120,0.5,-75)
-frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-frame.Visible=false
-frame.ZIndex = 999
-
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
-
--------------------------------------------------
--- BUTTON TẠO
+-- BUTTON MAKER
 -------------------------------------------------
 local function makeBtn(text,y)
 	local b = Instance.new("TextButton", frame)
-	b.Size = UDim2.new(0.9,0,0,30)
+	b.Size = UDim2.new(0.9,0,0,35)
 	b.Position = UDim2.new(0.05,0,0,y)
 	b.Text = text
-	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	b.TextScaled = true
+	b.BackgroundColor3 = Color3.fromRGB(40,40,40)
 	b.TextColor3 = Color3.new(1,1,1)
-	b.TextScaled=true
+	b.ZIndex = 999999
 	return b
 end
 
 local flyBtn = makeBtn("FLY",20)
-local tpBtn = makeBtn("TP PLAYER",60)
-local hideBtn = makeBtn("ẨN MÀN HÌNH",100)
+local hideBtn = makeBtn("ẨN MÀN HÌNH",70)
 
 -------------------------------------------------
--- MỞ MENU
+-- MỞ MENU (DÙNG Activated)
 -------------------------------------------------
-menuBtn.MouseButton1Click:Connect(function()
+menuBtn.Activated:Connect(function()
 	frame.Visible = not frame.Visible
 end)
 
@@ -110,7 +87,7 @@ local function startFly()
 
 	RunService:BindToRenderStep("Fly",0,function()
 		if not flying then return end
-		bv.Velocity = hum.MoveDirection*50
+		bv.Velocity = hum.MoveDirection*60
 	end)
 end
 
@@ -120,27 +97,14 @@ local function stopFly()
 	if bv then bv:Destroy() end
 end
 
-flyBtn.MouseButton1Click:Connect(function()
+flyBtn.Activated:Connect(function()
 	if flying then stopFly() else startFly() end
-end)
-
--------------------------------------------------
--- TP PLAYER (1 lần)
--------------------------------------------------
-tpBtn.MouseButton1Click:Connect(function()
-	for _,p in pairs(Players:GetPlayers()) do
-		if p~=player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-			player.Character.HumanoidRootPart.CFrame =
-				p.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
-			break
-		end
-	end
 end)
 
 -------------------------------------------------
 -- ẨN HẾT → chữ
 -------------------------------------------------
-hideBtn.MouseButton1Click:Connect(function()
+hideBtn.Activated:Connect(function()
 	gui:ClearAllChildren()
 
 	local t=Instance.new("TextLabel",gui)
