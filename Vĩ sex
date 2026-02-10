@@ -1,13 +1,10 @@
 --// =================================
--- 🔥 LÒ XO HUB (FUN EFFECT SCRIPT)
+-- 🔥 LÒ XO HUB V5 (SHOCK + JUMP BOOST)
 -- =================================
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--------------------------------------------------
--- GUI
--------------------------------------------------
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.ResetOnSpawn = false
 
@@ -29,20 +26,70 @@ local function showText(msg,color,time)
 end
 
 -------------------------------------------------
--- FLASH EFFECT
+-- GIVE TOOL (⚡ chim nhảy)
 -------------------------------------------------
-local function flash()
+local function giveTool()
 
-	for i=1,7 do
-		local f = Instance.new("Frame", gui)
-		f.Size = UDim2.new(1,0,1,0)
-		f.BackgroundColor3 = Color3.new(1,1,1)
+	local tool = Instance.new("Tool")
+	tool.Name = "chim nhảy"
 
-		task.wait(0.07)
-		f:Destroy()
-		task.wait(0.07)
-	end
+	local handle = Instance.new("Part")
+	handle.Name = "Handle"
+	handle.Size = Vector3.new(1,1,1)
+	handle.Material = Enum.Material.Neon
+	handle.Color = Color3.fromRGB(255,255,0)
+	handle.Parent = tool
 
+	---------------------------------------
+	-- điện particle
+	---------------------------------------
+	local spark = Instance.new("ParticleEmitter", handle)
+	spark.Texture = "rbxassetid://2529074586"
+	spark.Rate = 80
+	spark.Speed = NumberRange.new(6)
+	spark.Lifetime = NumberRange.new(0.2)
+
+	---------------------------------------
+	-- sound điện
+	---------------------------------------
+	local sound = Instance.new("Sound", handle)
+	sound.SoundId = "rbxassetid://12222225"
+	sound.Volume = 1
+
+	---------------------------------------
+	-- khi click
+	---------------------------------------
+	tool.Activated:Connect(function()
+
+		local char = player.Character
+		if not char then return end
+
+		local humanoid = char:FindFirstChildOfClass("Humanoid")
+		local root = char:FindFirstChild("HumanoidRootPart")
+		if not humanoid or not root then return end
+
+		-- ⚡ sound
+		sound:Play()
+
+		-- ⚡ chữ
+		task.spawn(function()
+			showText("chim nhảy", Color3.fromRGB(0,255,150), 0.8)
+		end)
+
+		-- ⚡ nhảy cao 1 lần
+		root.Velocity = Vector3.new(0,120,0)
+
+		-- ⚡ nhấp nháy điện
+		for i=1,6 do
+			handle.Color = Color3.fromRGB(255,255,255)
+			task.wait(0.05)
+			handle.Color = Color3.fromRGB(255,255,0)
+			task.wait(0.05)
+		end
+
+	end)
+
+	tool.Parent = player.Backpack
 end
 
 -------------------------------------------------
@@ -53,35 +100,38 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- BUTTON
+-- MENU BUTTON
 -------------------------------------------------
 local btn = Instance.new("TextButton", gui)
-btn.Size = UDim2.fromOffset(130,50)
-btn.Position = UDim2.new(0.5,-65,0.7,0)
 
-btn.Text = "godhuman"
+btn.Size = UDim2.fromOffset(170,65)
+btn.Position = UDim2.new(0.5,-85,0.7,0)
+
+btn.Text = "GOD HUMAN"
 btn.TextScaled = true
 btn.Font = Enum.Font.Arcade
-btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+btn.BackgroundColor3 = Color3.fromRGB(0,170,255)
+btn.TextColor3 = Color3.new(1,1,1)
 
 btn.Active = true
 btn.Draggable = true
 
 -------------------------------------------------
--- CLICK
+-- CLICK MENU
 -------------------------------------------------
 btn.MouseButton1Click:Connect(function()
 
-	showText("lục thức", Color3.fromRGB(255,255,0), 1)
-	task.wait(1)
+	showText("lục thức", Color3.fromRGB(255,255,0), 0.8)
+	task.wait(0.8)
 
-	showText("tao là vua lò xo", Color3.fromRGB(0,255,255), 1)
-	task.wait(1)
+	showText("tao là vua lò xo", Color3.fromRGB(0,255,255), 0.8)
+	task.wait(0.8)
 
-	showText("ahahhahhhh", Color3.fromRGB(255,80,80), 1)
-
-	flash()
+	showText("ahahhahhhh", Color3.fromRGB(255,80,80), 0.8)
 
 	showText("cảm ơn chim nhảy!", Color3.fromRGB(0,255,150), 2)
+
+	giveTool()
 
 end)
