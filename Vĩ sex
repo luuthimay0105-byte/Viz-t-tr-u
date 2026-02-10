@@ -1,35 +1,34 @@
 --// =================================
--- 🔥 LÒ XO HUB V7 (DASH + BOOM + SHOCK)
+-- 🔥 LÒ XO HUB FULL MENU FINAL
 -- =================================
 
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
 local player = Players.LocalPlayer
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.ResetOnSpawn = false
 
 -------------------------------------------------
--- TEXT EFFECT (có nền màu)
+-- TEXT FLASH
 -------------------------------------------------
-local function showText(msg,color,time)
+local function flashText()
 
 	local t = Instance.new("TextLabel", gui)
 	t.Size = UDim2.new(1,0,1,0)
-	t.BackgroundTransparency = 0.25
-	t.BackgroundColor3 = color or Color3.new(0,0,0)
-
-	t.Text = msg
+	t.BackgroundTransparency = 1
+	t.Text = "chim nhảy"
 	t.TextScaled = true
 	t.Font = Enum.Font.Arcade
-	t.TextColor3 = Color3.new(1,1,1)
+	t.TextColor3 = Color3.fromRGB(0,255,150)
 
-	task.wait(time or 1)
+	task.wait(0.1)
 	t:Destroy()
 end
 
 -------------------------------------------------
--- 💥 EFFECT NỔ
+-- 💥 BOOM TO
 -------------------------------------------------
 local function boom(pos)
 
@@ -37,14 +36,14 @@ local function boom(pos)
 	p.Anchored = true
 	p.CanCollide = false
 	p.Shape = Enum.PartType.Ball
-	p.Size = Vector3.new(1,1,1)
-	p.Position = pos
 	p.Material = Enum.Material.Neon
-	p.Color = Color3.fromRGB(255,255,0)
+	p.Color = Color3.fromRGB(255,200,0)
+	p.Position = pos
+	p.Size = Vector3.new(2,2,2)
 
-	for i=1,8 do
-		p.Size += Vector3.new(3,3,3)
-		p.Transparency += 0.12
+	for i=1,12 do
+		p.Size += Vector3.new(7,7,7)
+		p.Transparency += 0.07
 		task.wait(0.03)
 	end
 
@@ -52,101 +51,49 @@ local function boom(pos)
 end
 
 -------------------------------------------------
--- GIVE TOOL
+-- TOOL CHIM NHẢY
 -------------------------------------------------
-local function giveTool()
+local function giveChim()
 
 	local tool = Instance.new("Tool")
 	tool.Name = "chim nhảy"
 
-	local handle = Instance.new("Part")
+	local handle = Instance.new("Part", tool)
 	handle.Name = "Handle"
 	handle.Size = Vector3.new(1,1,1)
 	handle.Material = Enum.Material.Neon
 	handle.Color = Color3.fromRGB(255,255,0)
-	handle.Parent = tool
-
-	local sound = Instance.new("Sound", handle)
-	sound.SoundId = "rbxassetid://12222225"
 
 	local lastAir = false
 
-	---------------------------------
-	-- BUFF SPEED
-	---------------------------------
 	tool.Equipped:Connect(function()
-
-		local hum = player.Character:FindFirstChildOfClass("Humanoid")
-		if hum then
-			hum.WalkSpeed = 40
-		end
-
+		local h = player.Character:FindFirstChildOfClass("Humanoid")
+		if h then h.WalkSpeed = 45 end
 	end)
 
 	tool.Unequipped:Connect(function()
+		local h = player.Character:FindFirstChildOfClass("Humanoid")
+		if h then h.WalkSpeed = 16 end
+	end)
+
+	tool.Activated:Connect(function()
+		player.Character.HumanoidRootPart.Velocity = Vector3.new(0,140,0)
+		flashText()
+	end)
+
+	RunService.Heartbeat:Connect(function()
+
+		if tool.Parent ~= player.Character then return end
 
 		local hum = player.Character:FindFirstChildOfClass("Humanoid")
-		if hum then
-			hum.WalkSpeed = 16
-		end
-
-	end)
-
-	---------------------------------
-	-- CLICK = shock + jump
-	---------------------------------
-	tool.Activated:Connect(function()
-
-		local char = player.Character
-		if not char then return end
-
-		local root = char:FindFirstChild("HumanoidRootPart")
-
-		sound:Play()
-		showText("chim nhảy", Color3.fromRGB(0,255,150), 0.7)
-
-		root.Velocity = Vector3.new(0,120,0)
-
-	end)
-
-	---------------------------------
-	-- 💥 NỔ khi chạm đất
-	---------------------------------
-	game:GetService("RunService").Heartbeat:Connect(function()
-
-		if not tool.Parent then return end
-
-		local char = player.Character
-		if not char then return end
-
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		local root = char:FindFirstChild("HumanoidRootPart")
 
 		if hum.FloorMaterial == Enum.Material.Air then
 			lastAir = true
 		else
 			if lastAir then
 				lastAir = false
-				boom(root.Position)
+				boom(player.Character.HumanoidRootPart.Position)
 			end
-		end
-
-	end)
-
-	---------------------------------
-	-- ⚡ DASH (phím Q)
-	---------------------------------
-	UIS.InputBegan:Connect(function(input,gp)
-
-		if gp then return end
-		if input.KeyCode == Enum.KeyCode.Q then
-
-			local char = player.Character
-			local root = char and char:FindFirstChild("HumanoidRootPart")
-			if root then
-				root.Velocity = root.CFrame.LookVector * 120
-			end
-
 		end
 	end)
 
@@ -154,34 +101,90 @@ local function giveTool()
 end
 
 -------------------------------------------------
+-- TOOL DASH
+-------------------------------------------------
+local function giveDash()
+
+	local tool = Instance.new("Tool")
+	tool.Name = "dash"
+
+	local handle = Instance.new("Part", tool)
+	handle.Name = "Handle"
+	handle.Size = Vector3.new(1,1,1)
+	handle.Material = Enum.Material.Neon
+	handle.Color = Color3.fromRGB(0,170,255)
+
+	tool.Activated:Connect(function()
+		local root = player.Character.HumanoidRootPart
+		root.Velocity = root.CFrame.LookVector * 220
+	end)
+
+	tool.Parent = player.Backpack
+end
+
+-------------------------------------------------
+-- GUI MENU
+-------------------------------------------------
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.fromOffset(260,180)
+main.Position = UDim2.new(0.5,-130,0.6,0)
+main.BackgroundColor3 = Color3.fromRGB(35,35,35)
+main.Active = true
+main.Draggable = true
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,35)
+title.Text = "LÒ XO HUB"
+title.BackgroundColor3 = Color3.fromRGB(0,170,255)
+title.TextColor3 = Color3.new(1,1,1)
+title.TextScaled = true
+title.Font = Enum.Font.Arcade
+
+-------------------------------------------------
+-- TAB 1
+-------------------------------------------------
+local tab1 = Instance.new("TextButton", main)
+tab1.Size = UDim2.fromOffset(110,35)
+tab1.Position = UDim2.new(0,10,0,50)
+tab1.Text = "Chiêu lò xo"
+tab1.Font = Enum.Font.Arcade
+tab1.TextScaled = true
+
+tab1.MouseButton1Click:Connect(function()
+	giveChim()
+	giveDash()
+end)
+
+-------------------------------------------------
+-- TAB 2 (100 LẦN)
+-------------------------------------------------
+local tab2 = Instance.new("TextButton", main)
+tab2.Size = UDim2.fromOffset(110,35)
+tab2.Position = UDim2.new(0,10,0,100)
+tab2.Text = "Hiệu ứng"
+tab2.Font = Enum.Font.Arcade
+tab2.TextScaled = true
+
+local running = false
+
+tab2.MouseButton1Click:Connect(function()
+
+	if running then return end
+	running = true
+
+	task.spawn(function()
+
+		for i = 1,100 do
+			flashText()
+			task.wait(0.05)
+		end
+
+		running = false
+	end)
+
+end)
+
+-------------------------------------------------
 -- INTRO
 -------------------------------------------------
-task.spawn(function()
-	showText("chim nhảy", Color3.fromRGB(0,255,150), 2)
-end)
-
--------------------------------------------------
--- MENU BUTTON
--------------------------------------------------
-local btn = Instance.new("TextButton", gui)
-
-btn.Size = UDim2.fromOffset(170,65)
-btn.Position = UDim2.new(0.5,-85,0.7,0)
-
-btn.Text = "GOD HUMAN"
-btn.TextScaled = true
-btn.Font = Enum.Font.Arcade
-
-btn.BackgroundColor3 = Color3.fromRGB(0,170,255)
-btn.TextColor3 = Color3.new(1,1,1)
-
-btn.Active = true
-btn.Draggable = true
-
--------------------------------------------------
--- CLICK MENU
--------------------------------------------------
-btn.MouseButton1Click:Connect(function()
-	giveTool()
-	showText("đã nhận chim nhảy!", Color3.fromRGB(0,255,150), 1)
-end)
+flashText()
