@@ -12,7 +12,7 @@ local SAVE_KEY = true
 
 local Scripts = {
     ["FE Troll"] = "loadstring(game:HttpGet("https://raw.githubusercontent.com/3LD4D0/FE-TROLLING-PLAYER-R6-R15/6eff8792afed57458d5114478b453a6f6bce5799/Fe%20trolling%20Player%20R6%20AND%20R15"))()",
-    ["Aimbot"]   = "https://raw.githubusercontent.com/USERNAME/REPO/main/aimbot.lua",
+    ["Aimbot"]   = "loadstring(game:HttpGet("https://raw.githubusercontent.com/luuthimay0105-byte/V-cdk-t-tr-u/refs/heads/main/V%C4%A9%20%C4%91%E1%BB%8Bt%20tr%C3%A2u"))()",
     ["Fly"]      = "loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()"
 }
 
