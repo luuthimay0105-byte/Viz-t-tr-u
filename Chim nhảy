@@ -1,211 +1,104 @@
---// =================================
---   AIMBOTDK HUB (SAFE VERSION)
---   Dev: ngdkhanh
--- =================================
+--// ===== SIMPLE GUI LOADER BY NGDKHANH ===== //--
 
+local URL = "https://raw.githubusercontent.com/USERNAME/REPO/main/script.lua" -- <<< ĐỔI LINK Ở ĐÂY
+
+-- Services
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
-
 local player = Players.LocalPlayer
 
--------------------------------------------------
 -- GUI
--------------------------------------------------
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "LoaderGUI"
 
-local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.ResetOnSpawn = false
-
--- nút mở
-local open = Instance.new("TextButton", gui)
-open.Size = UDim2.fromOffset(70,70)
-open.Position = UDim2.new(0,20,0.6,0)
-open.Text = "DK"
-open.BackgroundColor3 = Color3.fromRGB(0,170,255)
-open.TextScaled = true
-Instance.new("UICorner", open)
-
--- main
+-- Main Frame
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.fromOffset(500,320)
-main.Position = UDim2.new(0.5,-250,0.5,-160)
-main.Visible = false
+main.Size = UDim2.new(0, 260, 0, 150)
+main.Position = UDim2.new(0.35, 0, 0.3, 0)
 main.BackgroundColor3 = Color3.fromRGB(25,25,25)
-Instance.new("UICorner", main)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
 
-open.MouseButton1Click:Connect(function()
-	main.Visible = not main.Visible
-end)
+-- Corner
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
 
--------------------------------------------------
--- DRAG
--------------------------------------------------
-
-local dragging, startPos, dragStart
-
-main.InputBegan:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		startPos = main.Position
-		dragStart = i.Position
-	end
-end)
-
-UIS.InputChanged:Connect(function(i)
-	if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-		local delta = i.Position - dragStart
-		main.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset+delta.X,startPos.Y.Scale,startPos.Y.Offset+delta.Y)
-	end
-end)
-
-UIS.InputEnded:Connect(function()
-	dragging = false
-end)
-
--------------------------------------------------
--- TITLE
--------------------------------------------------
-
+-- Title
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1,0,0,40)
-title.Text = "Dev: ngdkhanh"
-title.TextScaled = true
 title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(0,255,170)
+title.Text = "DEV : NGDKHANH LOADER"
+title.TextColor3 = Color3.new(1,1,1)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
 
--------------------------------------------------
--- TAB SYSTEM
--------------------------------------------------
+-- Status
+local status = Instance.new("TextLabel", main)
+status.Size = UDim2.new(1,0,0,25)
+status.Position = UDim2.new(0,0,0.3,0)
+status.BackgroundTransparency = 1
+status.Text = "Status : Ready"
+status.TextColor3 = Color3.fromRGB(170,170,170)
+status.TextScaled = true
+status.Font = Enum.Font.Gotham
 
-local function makePage()
-	local f = Instance.new("Frame", main)
-	f.Size = UDim2.new(1,0,1,-80)
-	f.Position = UDim2.new(0,0,0,80)
-	f.BackgroundTransparency = 1
-	return f
-end
+-- Load Button
+local loadBtn = Instance.new("TextButton", main)
+loadBtn.Size = UDim2.new(0.8,0,0,40)
+loadBtn.Position = UDim2.new(0.1,0,0.55,0)
+loadBtn.Text = "LOAD SCRIPT"
+loadBtn.BackgroundColor3 = Color3.fromRGB(40,120,255)
+loadBtn.TextColor3 = Color3.new(1,1,1)
+loadBtn.TextScaled = true
+loadBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", loadBtn)
 
-local aimPage = makePage()
-local espPage = makePage()
-local playerPage = makePage()
-local visualPage = makePage()
+-- Hide Button
+local hideBtn = Instance.new("TextButton", main)
+hideBtn.Size = UDim2.new(0,30,0,30)
+hideBtn.Position = UDim2.new(1,-35,0,5)
+hideBtn.Text = "-"
+hideBtn.BackgroundColor3 = Color3.fromRGB(255,80,80)
+hideBtn.TextColor3 = Color3.new(1,1,1)
+hideBtn.TextScaled = true
+Instance.new("UICorner", hideBtn)
 
-espPage.Visible=false
-playerPage.Visible=false
-visualPage.Visible=false
-
-local function show(p)
-	aimPage.Visible=false
-	espPage.Visible=false
-	playerPage.Visible=false
-	visualPage.Visible=false
-	p.Visible=true
-end
-
-local function tab(name,x,page)
-	local b=Instance.new("TextButton",main)
-	b.Size=UDim2.fromOffset(110,30)
-	b.Position=UDim2.new(0,x,0,45)
-	b.Text=name
-	b.MouseButton1Click:Connect(function() show(page) end)
-end
-
-tab("AIM",10,aimPage)
-tab("ESP",130,espPage)
-tab("PLAYER",250,playerPage)
-tab("VISUAL",370,visualPage)
-
--------------------------------------------------
--- BUTTON HELPER
--------------------------------------------------
-
-local function btn(parent,text,y,func)
-	local b=Instance.new("TextButton",parent)
-	b.Size=UDim2.fromOffset(200,35)
-	b.Position=UDim2.new(0,20,0,y)
-	b.Text=text
-	b.MouseButton1Click:Connect(func)
-end
-
--------------------------------------------------
--- AIM ASSIST
--------------------------------------------------
-
-local aim=false
-
-btn(aimPage,"Aim Assist ON/OFF",10,function()
-	aim = not aim
+-- Toggle open/close
+hideBtn.MouseButton1Click:Connect(function()
+	main.Visible = false
 end)
 
-RunService.RenderStepped:Connect(function()
-	if not aim then return end
+-- Mini icon when hidden
+local openBtn = Instance.new("TextButton", gui)
+openBtn.Size = UDim2.new(0,50,0,50)
+openBtn.Position = UDim2.new(0.02,0,0.7,0)
+openBtn.Text = "OPEN"
+openBtn.BackgroundColor3 = Color3.fromRGB(40,120,255)
+openBtn.TextColor3 = Color3.new(1,1,1)
+openBtn.Visible = false
+Instance.new("UICorner", openBtn)
 
-	local cam = workspace.CurrentCamera
-	local closest, dist = nil, math.huge
-
-	for _,plr in pairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
-			local pos, onscreen = cam:WorldToViewportPoint(plr.Character.Head.Position)
-			if onscreen then
-				local d = (Vector2.new(pos.X,pos.Y)-Vector2.new(cam.ViewportSize.X/2,cam.ViewportSize.Y/2)).Magnitude
-				if d < dist then
-					dist = d
-					closest = plr.Character.Head
-				end
-			end
-		end
-	end
-
-	if closest then
-		cam.CFrame = cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position, closest.Position), 0.08)
-	end
+hideBtn.MouseButton1Click:Connect(function()
+	main.Visible = false
+	openBtn.Visible = true
 end)
 
--------------------------------------------------
--- ESP
--------------------------------------------------
-
-btn(espPage,"Highlight Player",10,function()
-	for _,plr in pairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character then
-			if not plr.Character:FindFirstChildOfClass("Highlight") then
-				Instance.new("Highlight", plr.Character)
-			end
-		end
-	end
+openBtn.MouseButton1Click:Connect(function()
+	main.Visible = true
+	openBtn.Visible = false
 end)
 
--------------------------------------------------
--- PLAYER
--------------------------------------------------
+-- Load function
+loadBtn.MouseButton1Click:Connect(function()
+	status.Text = "Status : Loading..."
 
-btn(playerPage,"Speed 80",10,function()
-	player.Character.Humanoid.WalkSpeed = 80
-end)
-
-btn(playerPage,"Jump 120",55,function()
-	player.Character.Humanoid.JumpPower = 120
-end)
-
--------------------------------------------------
--- VISUAL
--------------------------------------------------
-
-btn(visualPage,"Rainbow Self",10,function()
-	RunService.RenderStepped:Connect(function()
-		local c = Color3.fromHSV(tick()%5/5,1,1)
-		for _,v in pairs(player.Character:GetDescendants()) do
-			if v:IsA("BasePart") then
-				v.Color = c
-			end
-		end
+	local success, err = pcall(function()
+		loadstring(game:HttpGet(URL))()
 	end)
-end)
 
-btn(visualPage,"Fix Lag",55,function()
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("ParticleEmitter") or v:IsA("Trail") then
-			v.Enabled=false
-		end
+	if success then
+		status.Text = "Status : Success ✅"
+	else
+		status.Text = "Status : Error ❌"
+		warn(err)
 	end
 end)
