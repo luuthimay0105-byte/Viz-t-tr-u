@@ -1,104 +1,185 @@
---// ===== SIMPLE GUI LOADER BY NGDKHANH ===== //--
+--// =====================================================
+--// 🔥 NGDKHANH ULTIMATE LOADER V3 - ALL IN ONE 🔥
+--// =====================================================
 
-local URL = "https://raw.githubusercontent.com/USERNAME/REPO/main/script.lua" -- <<< ĐỔI LINK Ở ĐÂY
+repeat task.wait() until game:IsLoaded()
 
--- Services
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+------------------------------------------------
+-- CONFIG
+------------------------------------------------
+local KEY = "ngdkhanh123" -- đổi key
+local SAVE_KEY = true
 
+local Scripts = {
+    ["FE Troll"] = "loadstring(game:HttpGet("https://raw.githubusercontent.com/3LD4D0/FE-TROLLING-PLAYER-R6-R15/6eff8792afed57458d5114478b453a6f6bce5799/Fe%20trolling%20Player%20R6%20AND%20R15"))()",
+    ["Aimbot"]   = "https://raw.githubusercontent.com/USERNAME/REPO/main/aimbot.lua",
+    ["Fly"]      = "loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()"
+}
+
+------------------------------------------------
+-- FPS BOOST + ANTI AFK
+------------------------------------------------
+pcall(function()
+    for _,v in pairs(game:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.Material = "Plastic"
+            v.Reflectance = 0
+        end
+    end
+end)
+
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    task.wait(1)
+    game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
+
+------------------------------------------------
 -- GUI
+------------------------------------------------
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "LoaderGUI"
+gui.Name = "NGDKHANH_ULTIMATE"
 
--- Main Frame
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 260, 0, 150)
-main.Position = UDim2.new(0.35, 0, 0.3, 0)
-main.BackgroundColor3 = Color3.fromRGB(25,25,25)
-main.BorderSizePixel = 0
+main.Size = UDim2.new(0, 380, 0, 270)
+main.Position = UDim2.new(0.3,0,0.3,0)
+main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 main.Active = true
 main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,18)
 
--- Corner
-Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
-
--- Title
+------------------------------------------------
+-- TITLE
+------------------------------------------------
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1,0,0,40)
-title.BackgroundTransparency = 1
-title.Text = "DEV : NGDKHANH LOADER"
-title.TextColor3 = Color3.new(1,1,1)
+title.Text = "🔥 NGDKHANH THợp 🔥"
 title.TextScaled = true
-title.Font = Enum.Font.GothamBold
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.new(1,1,1)
 
--- Status
+------------------------------------------------
+-- STATUS
+------------------------------------------------
 local status = Instance.new("TextLabel", main)
 status.Size = UDim2.new(1,0,0,25)
-status.Position = UDim2.new(0,0,0.3,0)
+status.Position = UDim2.new(0,0,0,40)
 status.BackgroundTransparency = 1
 status.Text = "Status : Ready"
-status.TextColor3 = Color3.fromRGB(170,170,170)
+status.TextColor3 = Color3.fromRGB(180,180,180)
 status.TextScaled = true
-status.Font = Enum.Font.Gotham
 
--- Load Button
-local loadBtn = Instance.new("TextButton", main)
-loadBtn.Size = UDim2.new(0.8,0,0,40)
-loadBtn.Position = UDim2.new(0.1,0,0.55,0)
-loadBtn.Text = "LOAD SCRIPT"
-loadBtn.BackgroundColor3 = Color3.fromRGB(40,120,255)
-loadBtn.TextColor3 = Color3.new(1,1,1)
-loadBtn.TextScaled = true
-loadBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", loadBtn)
+------------------------------------------------
+-- LOADING BAR
+------------------------------------------------
+local barBG = Instance.new("Frame", main)
+barBG.Size = UDim2.new(0.9,0,0,8)
+barBG.Position = UDim2.new(0.05,0,0,70)
+barBG.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", barBG)
 
--- Hide Button
-local hideBtn = Instance.new("TextButton", main)
-hideBtn.Size = UDim2.new(0,30,0,30)
-hideBtn.Position = UDim2.new(1,-35,0,5)
-hideBtn.Text = "-"
-hideBtn.BackgroundColor3 = Color3.fromRGB(255,80,80)
-hideBtn.TextColor3 = Color3.new(1,1,1)
-hideBtn.TextScaled = true
-Instance.new("UICorner", hideBtn)
+local bar = Instance.new("Frame", barBG)
+bar.Size = UDim2.new(0,0,1,0)
+bar.BackgroundColor3 = Color3.fromRGB(0,170,255)
+Instance.new("UICorner", bar)
 
--- Toggle open/close
-hideBtn.MouseButton1Click:Connect(function()
-	main.Visible = false
+local function loadAnim()
+    bar.Size = UDim2.new(0,0,1,0)
+    for i=1,100 do
+        bar.Size = UDim2.new(i/100,0,1,0)
+        task.wait(0.003)
+    end
+end
+
+------------------------------------------------
+-- KEY SYSTEM
+------------------------------------------------
+local keyBox = Instance.new("TextBox", main)
+keyBox.Size = UDim2.new(0.7,0,0,30)
+keyBox.Position = UDim2.new(0.05,0,0,90)
+keyBox.PlaceholderText = "Enter Key..."
+keyBox.TextScaled = true
+keyBox.BackgroundColor3 = Color3.fromRGB(35,35,35)
+keyBox.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", keyBox)
+
+local unlockBtn = Instance.new("TextButton", main)
+unlockBtn.Size = UDim2.new(0.2,0,0,30)
+unlockBtn.Position = UDim2.new(0.78,0,0,90)
+unlockBtn.Text = "OK"
+unlockBtn.TextScaled = true
+unlockBtn.BackgroundColor3 = Color3.fromRGB(0,200,120)
+Instance.new("UICorner", unlockBtn)
+
+local unlocked = false
+
+if SAVE_KEY and getgenv().SavedKey == KEY then
+    unlocked = true
+end
+
+unlockBtn.MouseButton1Click:Connect(function()
+    if keyBox.Text == KEY then
+        unlocked = true
+        status.Text = " xác minh thành công ✅"
+        if SAVE_KEY then
+            getgenv().SavedKey = KEY
+        end
+    else
+        status.Text = "key không đúng! ❌"
+    end
 end)
 
--- Mini icon when hidden
-local openBtn = Instance.new("TextButton", gui)
-openBtn.Size = UDim2.new(0,50,0,50)
-openBtn.Position = UDim2.new(0.02,0,0.7,0)
-openBtn.Text = "OPEN"
-openBtn.BackgroundColor3 = Color3.fromRGB(40,120,255)
-openBtn.TextColor3 = Color3.new(1,1,1)
-openBtn.Visible = false
-Instance.new("UICorner", openBtn)
+------------------------------------------------
+-- SCRIPT BUTTONS
+------------------------------------------------
+local y = 135
 
-hideBtn.MouseButton1Click:Connect(function()
-	main.Visible = false
-	openBtn.Visible = true
-end)
+for name, url in pairs(Scripts) do
+    local btn = Instance.new("TextButton", main)
+    btn.Size = UDim2.new(0.9,0,0,30)
+    btn.Position = UDim2.new(0.05,0,0,y)
+    btn.Text = "LOAD "..name
+    btn.TextScaled = true
+    btn.BackgroundColor3 = Color3.fromRGB(0,120,255)
+    btn.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", btn)
 
-openBtn.MouseButton1Click:Connect(function()
-	main.Visible = true
-	openBtn.Visible = false
-end)
+    y += 35
 
--- Load function
-loadBtn.MouseButton1Click:Connect(function()
-	status.Text = "Status : Loading..."
+    btn.MouseButton1Click:Connect(function()
+        if not unlocked then
+            status.Text = "Need Key 🔒"
+            return
+        end
 
-	local success, err = pcall(function()
-		loadstring(game:HttpGet(URL))()
-	end)
+        status.Text = "Loading "..name
+        loadAnim()
 
-	if success then
-		status.Text = "Status : Success ✅"
-	else
-		status.Text = "Status : Error ❌"
-		warn(err)
-	end
+        local ok,err = pcall(function()
+            loadstring(game:HttpGet(url))()
+        end)
+
+        if ok then
+            status.Text = name.." Loaded ✅"
+        else
+            status.Text = "Error ❌"
+            warn(err)
+        end
+    end)
+end
+
+------------------------------------------------
+-- MINI MENU BUTTON
+------------------------------------------------
+local mini = Instance.new("TextButton", gui)
+mini.Size = UDim2.new(0,60,0,60)
+mini.Position = UDim2.new(0.02,0,0.7,0)
+mini.Text = "MENU"
+mini.TextScaled = true
+mini.BackgroundColor3 = Color3.fromRGB(0,120,255)
+mini.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", mini)
+
+mini.MouseButton1Click:Connect(function()
+    main.Visible = not main.Visible
 end)
