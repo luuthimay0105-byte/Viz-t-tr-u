@@ -1,11 +1,9 @@
--- Blox Fruit Script - Vĩ Địt Trâu Hub (Full Features)
--- Phiên bản: 2.1 - Thêm thông báo "Vĩ Sky"
+-- Blox Fruit Script - Vĩ Địt Trâu Hub (Full Features + Fix Mobile)
+-- Phiên bản: 2.3 - Gộp fix lỗi UserInputService và thêm loading
 
 local player = game:GetService("Players").LocalPlayer
 local runService = game:GetService("RunService")
-local userInput = game:GetService("UserInputService")
 local tweenService = game:GetService("TweenService")
-local virtualInput = userInput:GetService("VirtualInputManager")
 
 -- ===== CẤU HÌNH CHÍNH =====
 local Settings = {
@@ -29,8 +27,66 @@ local Settings = {
     MasteryFarm = false,
     AutoBones = false,
     AutoFragments = false,
-    TeleportSmooth = true
+    TeleportSmooth = false  -- Tắt smooth trên mobile
 }
+
+-- ===== HÀM LOADING =====
+local function showLoading()
+    local loadingGui = Instance.new("ScreenGui")
+    loadingGui.Name = "LoadingScreen"
+    loadingGui.Parent = player:WaitForChild("PlayerGui")
+    loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    local darkBg = Instance.new("Frame")
+    darkBg.Size = UDim2.new(1, 0, 1, 0)
+    darkBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    darkBg.BackgroundTransparency = 0.7
+    darkBg.Parent = loadingGui
+    
+    local centerFrame = Instance.new("Frame")
+    centerFrame.Size = UDim2.new(0, 250, 0, 100)
+    centerFrame.Position = UDim2.new(0.5, -125, 0.5, -50)
+    centerFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    centerFrame.BackgroundTransparency = 0.2
+    centerFrame.BorderSizePixel = 0
+    centerFrame.Parent = loadingGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = centerFrame
+    
+    local loadingText = Instance.new("TextLabel")
+    loadingText.Size = UDim2.new(1, 0, 0, 30)
+    loadingText.Position = UDim2.new(0, 0, 0, 10)
+    loadingText.Text = "ĐANG TẢI VĨ ĐỊT TRÂU HUB..."
+    loadingText.TextColor3 = Color3.fromRGB(255, 200, 0)
+    loadingText.BackgroundTransparency = 1
+    loadingText.Font = Enum.Font.GothamBold
+    loadingText.TextSize = 18
+    loadingText.Parent = centerFrame
+    
+    local progressBar = Instance.new("Frame")
+    progressBar.Size = UDim2.new(0, 200, 0, 8)
+    progressBar.Position = UDim2.new(0.5, -100, 0, 50)
+    progressBar.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    progressBar.BorderSizePixel = 0
+    progressBar.Parent = centerFrame
+    
+    local progressFill = Instance.new("Frame")
+    progressFill.Size = UDim2.new(0, 0, 1, 0)
+    progressFill.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+    progressFill.BorderSizePixel = 0
+    progressFill.Parent = progressBar
+    
+    -- Animation loading
+    for i = 1, 100 do
+        progressFill.Size = UDim2.new(0, i * 2, 1, 0)
+        task.wait(0.01)
+    end
+    
+    task.wait(0.5)
+    loadingGui:Destroy()
+end
 
 -- ===== HÀM THÔNG BÁO VĨ SKY =====
 local function showViSkyNotification()
@@ -73,7 +129,6 @@ local function showViSkyNotification()
     glow.Rotation = 45
     glow.Parent = frame
     
-    -- Hiệu ứng xuất hiện
     frame.BackgroundTransparency = 1
     text.TextTransparency = 1
     local tweenIn = tweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back), {BackgroundTransparency = 0.3})
@@ -81,7 +136,6 @@ local function showViSkyNotification()
     tweenIn:Play()
     tweenText:Play()
     
-    -- Tự động ẩn sau 3 giây
     task.wait(3)
     local tweenOut = tweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
     local tweenTextOut = tweenService:Create(text, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {TextTransparency = 1})
@@ -91,21 +145,16 @@ local function showViSkyNotification()
     notifGui:Destroy()
 end
 
--- ===== GỌI THÔNG BÁO KHI BẬT SCRIPT =====
+-- ===== GỌI LOADING VÀ THÔNG BÁO =====
+showLoading()
 showViSkyNotification()
 
--- ===== HÀM TIỆN ÍCH =====
+-- ===== HÀM TIỆN ÍCH (FIX MOBILE) =====
 local function teleport(pos)
     if not player.Character then return end
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    if Settings.TeleportSmooth then
-        local tween = tweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
-        tween:Play()
-        tween.Completed:Wait()
-    else
-        hrp.CFrame = CFrame.new(pos)
-    end
+    hrp.CFrame = CFrame.new(pos)
 end
 
 local function getNearest(targetType)
@@ -141,15 +190,15 @@ local function getNearest(targetType)
 end
 
 local function attack()
-    local key = Enum.KeyCode.E
-    if Settings.FarmTarget == "NPC" then
-        key = Enum.KeyCode.E
-    elseif Settings.FarmTarget == "Boss" then
-        key = Enum.KeyCode.R
+    -- Fix mobile: dùng fireclickdetector thay vì VirtualInputManager
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local clickDetector = Instance.new("ClickDetector")
+        clickDetector.Parent = hrp
+        clickDetector.MaxActivationDistance = 10
+        fireclickdetector(clickDetector)
+        clickDetector:Destroy()
     end
-    virtualInput:SendKeyEvent(true, key, false, game)
-    task.wait(Settings.AttackDelay)
-    virtualInput:SendKeyEvent(false, key, false, game)
 end
 
 -- ===== AUTO FARM =====
@@ -162,6 +211,7 @@ if Settings.AutoFarm then
             if hrp then
                 hrp.CFrame = target.Head.CFrame + Vector3.new(0, 2, 2)
                 attack()
+                task.wait(Settings.AttackDelay)
             end
         elseif target and dist > Settings.FarmRadius then
             teleport(target.Head.Position + Vector3.new(0, 2, 3))
@@ -187,9 +237,7 @@ if Settings.AutoRaid then
     if raidPos then
         teleport(raidPos)
         task.wait(1)
-        virtualInput:SendKeyEvent(true, Enum.KeyCode.T, false, game)
-        task.wait(0.5)
-        virtualInput:SendKeyEvent(false, Enum.KeyCode.T, false, game)
+        attack()
     end
 end
 
@@ -220,14 +268,14 @@ if Settings.AutoFruit then
         if fruitNPC then
             teleport(fruitNPC.Head.Position)
             task.wait(1)
-            virtualInput:SendKeyEvent(true, Enum.KeyCode.Q, false, game)
+            attack()
         end
     elseif Settings.FruitAction == "Roll" then
         local gacha = workspace:FindFirstChild("Gacha")
         if gacha then
             teleport(gacha.Head.Position)
             task.wait(1)
-            virtualInput:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+            attack()
         end
     end
 end
@@ -311,15 +359,6 @@ if Settings.AutoBones then
     end)
 end
 
-if Settings.AutoFragments then
-    runService.RenderStepped:Connect(function()
-        local fragments = player:FindFirstChild("Fragments")
-        if fragments and fragments.Value > 0 then
-            -- Tự động lưu fragments
-        end
-    end)
-end
-
 -- ===== GUI Vĩ Địt Trâu =====
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ViDitTrauHub"
@@ -335,7 +374,7 @@ mainFrame.Parent = screenGui
 
 local titleBar = Instance.new("TextLabel")
 titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.Text = "Vĩ Địt Trâu Hub v2.1"
+titleBar.Text = "Vĩ Địt Trâu Hub v2.3"
 titleBar.TextColor3 = Color3.fromRGB(255,200,0)
 titleBar.BackgroundTransparency = 1
 titleBar.Font = Enum.Font.GothamBold
