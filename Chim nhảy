@@ -1,11 +1,12 @@
--- Blox Fruit Script - Vĩ Địt Trâu Hub (Full Features + Fix Mobile)
--- Phiên bản: 2.3 - Gộp fix lỗi UserInputService và thêm loading
+-- Blox Fruit Script - Vĩ Địt Trâu Hub (Full Menu + Chức năng)
+-- Phiên bản: 2.4 - Thêm menu tương tác
 
 local player = game:GetService("Players").LocalPlayer
 local runService = game:GetService("RunService")
 local tweenService = game:GetService("TweenService")
+local userInputService = game:GetService("UserInputService")
 
--- ===== CẤU HÌNH CHÍNH =====
+-- ===== CẤU HÌNH =====
 local Settings = {
     AutoFarm = true,
     FarmTarget = "NPC",
@@ -27,7 +28,7 @@ local Settings = {
     MasteryFarm = false,
     AutoBones = false,
     AutoFragments = false,
-    TeleportSmooth = false  -- Tắt smooth trên mobile
+    TeleportSmooth = false
 }
 
 -- ===== HÀM LOADING =====
@@ -50,10 +51,6 @@ local function showLoading()
     centerFrame.BackgroundTransparency = 0.2
     centerFrame.BorderSizePixel = 0
     centerFrame.Parent = loadingGui
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
-    corner.Parent = centerFrame
     
     local loadingText = Instance.new("TextLabel")
     loadingText.Size = UDim2.new(1, 0, 0, 30)
@@ -78,7 +75,6 @@ local function showLoading()
     progressFill.BorderSizePixel = 0
     progressFill.Parent = progressBar
     
-    -- Animation loading
     for i = 1, 100 do
         progressFill.Size = UDim2.new(0, i * 2, 1, 0)
         task.wait(0.01)
@@ -88,11 +84,8 @@ local function showLoading()
     loadingGui:Destroy()
 end
 
--- ===== HÀM THÔNG BÁO VĨ SKY =====
+-- ===== HÀM THÔNG BÁO =====
 local function showViSkyNotification()
-    local screenGui = player:WaitForChild("PlayerGui"):FindFirstChild("ViSkyNotif")
-    if screenGui then screenGui:Destroy() end
-    
     local notifGui = Instance.new("ScreenGui")
     notifGui.Name = "ViSkyNotif"
     notifGui.Parent = player:WaitForChild("PlayerGui")
@@ -106,10 +99,6 @@ local function showViSkyNotification()
     frame.BorderSizePixel = 0
     frame.Parent = notifGui
     
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
-    corner.Parent = frame
-    
     local text = Instance.new("TextLabel")
     text.Size = UDim2.new(1, 0, 1, 0)
     text.Text = "🔥 VĨ SKY 🔥"
@@ -120,15 +109,6 @@ local function showViSkyNotification()
     text.TextScaled = true
     text.Parent = frame
     
-    local glow = Instance.new("UIGradient")
-    glow.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 150, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
-    })
-    glow.Rotation = 45
-    glow.Parent = frame
-    
     frame.BackgroundTransparency = 1
     text.TextTransparency = 1
     local tweenIn = tweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back), {BackgroundTransparency = 0.3})
@@ -137,19 +117,13 @@ local function showViSkyNotification()
     tweenText:Play()
     
     task.wait(3)
-    local tweenOut = tweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
-    local tweenTextOut = tweenService:Create(text, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {TextTransparency = 1})
-    tweenOut:Play()
-    tweenTextOut:Play()
-    tweenOut.Completed:Wait()
     notifGui:Destroy()
 end
 
--- ===== GỌI LOADING VÀ THÔNG BÁO =====
 showLoading()
 showViSkyNotification()
 
--- ===== HÀM TIỆN ÍCH (FIX MOBILE) =====
+-- ===== HÀM TIỆN ÍCH =====
 local function teleport(pos)
     if not player.Character then return end
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
@@ -190,7 +164,6 @@ local function getNearest(targetType)
 end
 
 local function attack()
-    -- Fix mobile: dùng fireclickdetector thay vì VirtualInputManager
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         local clickDetector = Instance.new("ClickDetector")
@@ -241,7 +214,7 @@ if Settings.AutoRaid then
     end
 end
 
--- ===== AUTO SEA EVENT =====
+-- ===== AUTO SEA =====
 if Settings.AutoSea then
     runService.RenderStepped:Connect(function()
         local target, dist = getNearest(Settings.SeaTarget)
@@ -341,15 +314,12 @@ if Settings.MasteryFarm then
     runService.RenderStepped:Connect(function()
         local weapon = player.Character and player.Character:FindFirstChildWhichIsA("Tool")
         if weapon then
-            local mastery = weapon:FindFirstChild("Mastery")
-            if mastery then
-                attack()
-            end
+            attack()
         end
     end)
 end
 
--- ===== AUTO BONES & FRAGMENTS =====
+-- ===== AUTO BONES =====
 if Settings.AutoBones then
     runService.RenderStepped:Connect(function()
         local bones = player.Backpack:FindFirstChild("Bones")
@@ -359,40 +329,172 @@ if Settings.AutoBones then
     end)
 end
 
--- ===== GUI Vĩ Địt Trâu =====
+-- ===== MENU CHÍNH (CÓ NÚT BẬT/TẮT) =====
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ViDitTrauHub"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -250)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-mainFrame.BackgroundTransparency = 0.15
+mainFrame.Size = UDim2.new(0, 400, 0, 550)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -275)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
 local titleBar = Instance.new("TextLabel")
 titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.Text = "Vĩ Địt Trâu Hub v2.3"
-titleBar.TextColor3 = Color3.fromRGB(255,200,0)
+titleBar.Text = "VĨ ĐỊT TRÂU HUB v2.4"
+titleBar.TextColor3 = Color3.fromRGB(255, 200, 0)
 titleBar.BackgroundTransparency = 1
 titleBar.Font = Enum.Font.GothamBold
-titleBar.TextSize = 18
+titleBar.TextSize = 20
 titleBar.Parent = mainFrame
 
-local statusText = Instance.new("TextLabel")
-statusText.Size = UDim2.new(1, 0, 0, 30)
-statusText.Position = UDim2.new(0, 0, 0, 40)
-statusText.Text = "AutoFarm: BẬT | ESP: BẬT"
-statusText.TextColor3 = Color3.fromRGB(150,255,150)
-statusText.BackgroundTransparency = 1
-statusText.TextSize = 12
-statusText.Parent = mainFrame
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 5)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+closeBtn.Parent = mainFrame
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui.Enabled = not screenGui.Enabled
+end)
+
+local drag = { dragging = false, startPos = nil, startMouse = nil }
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        drag.dragging = true
+        drag.startPos = mainFrame.Position
+        drag.startMouse = input.Position
+    end
+end)
+userInputService.InputChanged:Connect(function(input)
+    if drag.dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - drag.startMouse
+        mainFrame.Position = UDim2.new(drag.startPos.X.Scale, drag.startPos.X.Offset + delta.X, drag.startPos.Y.Scale, drag.startPos.Y.Offset + delta.Y)
+    end
+end)
+userInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        drag.dragging = false
+    end
+end)
+
+local yOffset = 50
+local function addToggle(text, settingKey, yPos)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(1, -20, 0, 35)
+    toggleFrame.Position = UDim2.new(0, 10, 0, yPos)
+    toggleFrame.BackgroundTransparency = 1
+    toggleFrame.Parent = mainFrame
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.7, 0, 1, 0)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = toggleFrame
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 60, 0, 30)
+    btn.Position = UDim2.new(1, -70, 0, 2)
+    btn.Text = Settings[settingKey] and "BẬT" or "TẮT"
+    btn.TextColor3 = Settings[settingKey] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    btn.Parent = toggleFrame
+    
+    btn.MouseButton1Click:Connect(function()
+        Settings[settingKey] = not Settings[settingKey]
+        btn.Text = Settings[settingKey] and "BẬT" or "TẮT"
+        btn.TextColor3 = Settings[settingKey] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    end)
+    return toggleFrame
+end
+
+local function addDropdown(text, settingKey, options, yPos)
+    local dropFrame = Instance.new("Frame")
+    dropFrame.Size = UDim2.new(1, -20, 0, 35)
+    dropFrame.Position = UDim2.new(0, 10, 0, yPos)
+    dropFrame.BackgroundTransparency = 1
+    dropFrame.Parent = mainFrame
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.5, 0, 1, 0)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = dropFrame
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 100, 0, 30)
+    btn.Position = UDim2.new(1, -110, 0, 2)
+    btn.Text = Settings[settingKey]
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    btn.Parent = dropFrame
+    
+    local expanded = false
+    local listFrame = nil
+    btn.MouseButton1Click:Connect(function()
+        if expanded then
+            if listFrame then listFrame:Destroy() end
+            expanded = false
+            return
+        end
+        expanded = true
+        listFrame = Instance.new("Frame")
+        listFrame.Size = UDim2.new(0, 100, 0, #options * 25)
+        listFrame.Position = UDim2.new(1, -110, 0, 30)
+        listFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+        listFrame.Parent = dropFrame
+        for i, opt in pairs(options) do
+            local optBtn = Instance.new("TextButton")
+            optBtn.Size = UDim2.new(1, 0, 0, 25)
+            optBtn.Position = UDim2.new(0, 0, 0, (i-1)*25)
+            optBtn.Text = opt
+            optBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+            optBtn.TextColor3 = Color3.fromRGB(255,255,255)
+            optBtn.Parent = listFrame
+            optBtn.MouseButton1Click:Connect(function()
+                Settings[settingKey] = opt
+                btn.Text = opt
+                listFrame:Destroy()
+                expanded = false
+            end)
+        end
+    end)
+    return dropFrame
+end
+
+addToggle("Auto Farm", "AutoFarm", yOffset)
+addToggle("Auto Raid", "AutoRaid", yOffset + 40)
+addToggle("Auto Sea Event", "AutoSea", yOffset + 80)
+addToggle("Auto Fruit", "AutoFruit", yOffset + 120)
+addToggle("Auto Stats", "AutoStats", yOffset + 160)
+addToggle("ESP", "ESPEnabled", yOffset + 200)
+addToggle("Mastery Farm", "MasteryFarm", yOffset + 240)
+addToggle("Auto Bones", "AutoBones", yOffset + 280)
+
+addDropdown("Farm Target", "FarmTarget", {"NPC", "Boss", "Elite"}, yOffset + 330)
+addDropdown("Raid Type", "RaidType", {"Flame", "Ice", "Dark", "Light", "Sand", "Magma", "Human", "Mink", "Fishman", "Skypiea"}, yOffset + 370)
+addDropdown("Sea Target", "SeaTarget", {"SeaBeast", "Ship", "Piranha", "Shark"}, yOffset + 410)
+addDropdown("Fruit Action", "FruitAction", {"Store", "Sell", "Roll"}, yOffset + 450)
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 30)
+statusLabel.Position = UDim2.new(0, 0, 1, -35)
+statusLabel.Text = "AutoFarm: BẬT | ESP: BẬT"
+statusLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextSize = 12
+statusLabel.Parent = mainFrame
 
 task.spawn(function()
     while true do
-        statusText.Text = "AutoFarm: " .. (Settings.AutoFarm and "BẬT" or "TẮT") .. " | ESP: " .. (Settings.ESPEnabled and "BẬT" or "TẮT")
-        task.wait(2)
+        statusLabel.Text = "AutoFarm: " .. (Settings.AutoFarm and "BẬT" or "TẮT") .. " | ESP: " .. (Settings.ESPEnabled and "BẬT" or "TẮT")
+        task.wait(1)
     end
 end)
